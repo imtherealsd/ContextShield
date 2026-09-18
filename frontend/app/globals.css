@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+:root {
+  --bg-canvas: #0b0f17;
+  --bg-card: #111827;
+  --bg-card-hover: #162032;
+  --bg-card-secondary: #1a2333;
+  --border-subtle: #1e293b;
+  --border-strong: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --badge-safe-bg: rgba(16, 185, 129, 0.12);
+  --badge-safe-border: rgba(16, 185, 129, 0.35);
+  --badge-safe-text: #10b981;
+
+  --badge-san-bg: rgba(6, 182, 212, 0.12);
+  --badge-san-border: rgba(6, 182, 212, 0.35);
+  --badge-san-text: #06b6d4;
+
+  --badge-rev-bg: rgba(245, 158, 11, 0.12);
+  --badge-rev-border: rgba(245, 158, 11, 0.35);
+  --badge-rev-text: #f59e0b;
+
+  --badge-blk-bg: rgba(239, 68, 68, 0.12);
+  --badge-blk-border: rgba(239, 68, 68, 0.35);
+  --badge-blk-text: #ef4444;
+
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+}
+
+[data-theme="light"] {
+  --bg-canvas: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-card-secondary: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --badge-safe-bg: rgba(16, 185, 129, 0.1);
+  --badge-safe-border: rgba(16, 185, 129, 0.4);
+  --badge-safe-text: #059669;
+
+  --badge-san-bg: rgba(6, 182, 212, 0.1);
+  --badge-san-border: rgba(6, 182, 212, 0.4);
+  --badge-san-text: #0891b2;
+
+  --badge-rev-bg: rgba(245, 158, 11, 0.1);
+  --badge-rev-border: rgba(245, 158, 11, 0.4);
+  --badge-rev-text: #d97706;
+
+  --badge-blk-bg: rgba(239, 68, 68, 0.1);
+  --badge-blk-border: rgba(239, 68, 68, 0.4);
+  --badge-blk-text: #dc2626;
+
+  --accent-blue: #2563eb;
+  --accent-purple: #7c3aed;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Utility Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
