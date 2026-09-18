@@ -81,5 +81,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 # This improves security by not running as root
 USER appuser
 
-# Run FastAPI backend with dynamic port binding
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run the LiveKit agent worker
+CMD ["python", "-m", "livekit_voice.agent", "start"]
