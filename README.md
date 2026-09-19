@@ -31,6 +31,8 @@ External Context (Web, APIs, Docs, Voice)
   - [Product Requirements Document (PRD)](docs/PRD.md)
   - [Production Deployment Guide](DEPLOYMENT.md)
   - [Security Policy](SECURITY.md)
+  - [Video Demonstration & Audit Report](docs/demo-recording/recording-report.md)
+  - [Master Documentation Hub](docs/README.md)
 
 ---
 

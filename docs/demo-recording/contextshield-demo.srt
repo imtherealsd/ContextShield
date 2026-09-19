@@ -1,0 +1,59 @@
+1
+00:00:00,500 --> 00:00:05,800
+AI agents consume untrusted data from documents, APIs, and voice.
+
+2
+00:00:06,000 --> 00:00:11,500
+Without an external gateway, prompt injections hijack reasoning before execution begins.
+
+3
+00:00:12,500 --> 00:00:18,500
+ContextShield is a low-latency security gateway positioned in front of the agent.
+
+4
+00:00:18,800 --> 00:00:26,500
+Inbound context is scanned in parallel by sub-millisecond deterministic rules and Moss semantic retrieval over enterprise policies.
+
+5
+00:00:26,800 --> 00:00:33,000
+Clear threats and safe inputs resolve immediately, while Gemini is gated behind the deterministic path for ambiguous cases.
+
+6
+00:00:33,200 --> 00:00:36,500
+Downstream agents are strictly isolated from unapproved context.
+
+7
+00:00:48,500 --> 00:00:54,500
+Here is our production proof. An inbound document delivers an instruction override seeking API keys.
+
+8
+00:00:54,800 --> 00:00:58,500
+ContextShield detects the threat and issues a BLOCK.
+
+9
+00:00:58,800 --> 00:01:04,500
+The protected agent was never called and received no context from the blocked request.
+
+10
+00:01:04,800 --> 00:01:07,000
+Zero toxic tokens reach the model.
+
+11
+00:01:13,000 --> 00:01:19,800
+When an isolated malicious instruction is embedded in legitimate documentation, ContextShield sanitizes it.
+
+12
+00:01:20,000 --> 00:01:26,300
+The hostile override is excised, the payload is revalidated, and only cleaned context reaches the agent.
+
+13
+00:01:31,500 --> 00:01:41,200
+In the audit drawer, we inspect the decision evidence: deterministic rule triggers, sub-millisecond latency, and semantic policy candidates retrieved by Moss.
+
+14
+00:01:41,500 --> 00:01:49,500
+The same boundary protects voice: LiveKit transcribes speech, and ContextShield blocks unsafe context before reaching the agent.
+
+15
+00:01:50,200 --> 00:01:53,900
+ContextShield: inspect first, trust second.

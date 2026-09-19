@@ -51,3 +51,9 @@ Thumbs.db
 brain/
 scratch/
 .playwright-mcp/
+
+# Demo recording media files (keep scripts/reports tracked, ignore large video/audio)
+docs/demo-recording/*.webm
+docs/demo-recording/*.mp4
+docs/demo-recording/*.wav
+

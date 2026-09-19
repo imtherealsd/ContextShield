@@ -1,4 +1,7 @@
-# ContextShield — 2-Minute Hackathon Demo Script
+# ContextShield — 2-Minute Hackathon Demo Script (Initial Draft)
+
+> **Note**: For the final approved, 7-scene synchronized production script with calibrated neural narration timings, please refer to **[demo-script-final.md](demo-script-final.md)**.
+
 
 - **Target Video Duration**: 1 minute 52 seconds (Safety margin: 8 seconds below 2:00 ceiling)
 - **Total Spoken Word Count**: 223 words
