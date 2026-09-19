@@ -1,5 +1,7 @@
 # ContextShield
 
+[![CI](https://github.com/imtherealsd/ContextShield/actions/workflows/ci.yml/badge.svg)](https://github.com/imtherealsd/ContextShield/actions/workflows/ci.yml)
+
 > **ContextShield is a low-latency security gateway that inspects untrusted external context before an AI agent is allowed to consume it.**
 
 ```text
@@ -353,9 +355,49 @@ YC-Moss/
 
 ---
 
-## ⚠️ Current Limitations
+## ⚙️ Production Engineering Architecture
 
-1. **In-Memory Telemetry**: The hackathon release maintains session telemetry in memory; restarting the Railway backend resets event counters truthfully to 0.
+ContextShield is hardened for enterprise reliability, automated CI/CD validation, and strict privacy invariants:
+
+### 1. Centralized Validated Settings (`pydantic-settings`)
+- Application settings reside in [backend/app/core/config.py](backend/app/core/config.py) using Pydantic Settings.
+- Secrets (`GEMINI_API_KEY`, `MOSS_PROJECT_KEY`, `LIVEKIT_API_SECRET`, `DATABASE_URL`) are wrapped in `SecretStr` and automatically masked (`**********`) in string representations and logs.
+- Strict numeric validation enforces positive latency thresholds and probability bounds on confidence scores.
+
+### 2. Pluggable Storage Abstraction
+Audit telemetry adheres to the `AuditStore` interface in [backend/app/storage/base.py](backend/app/storage/base.py):
+- **Memory Storage (`AUDIT_STORE=memory`)**: **Default**. Zero-dependency, ephemeral bounded in-memory telemetry suitable for rapid local development, automated test harnesses, and demo environments.
+- **PostgreSQL Persistence (`AUDIT_STORE=postgres`)**: Optional production persistence implemented via SQLAlchemy 2.0 and `asyncpg` in [backend/app/storage/postgres.py](backend/app/storage/postgres.py). Requires `DATABASE_URL`.
+- **Strict Privacy Invariant**: Regardless of the storage backend, ContextShield **NEVER** persists raw hostile context, raw audio, or API keys. Only SHA-256 hashes, decision metrics, latency timestamps, and safe redacted previews are saved.
+
+### 3. Database Migrations (Alembic)
+Schema versioning is managed via Alembic:
+```bash
+# Run database migrations
+python -m alembic upgrade head
+```
+The migration script [alembic/versions/001_initial_audit_telemetry.py](alembic/versions/001_initial_audit_telemetry.py) establishes the indexed `audit_telemetry` table.
+
+### 4. Deterministic Dependency Management (`pip-tools`)
+To ensure fully reproducible builds across Railway containers, Docker images, and developer machines:
+- Direct production requirements: `requirements.in`
+- Development requirements: `requirements-dev.in`
+- Compiled, pinned lockfiles generated deterministically via:
+  ```bash
+  python -m piptools compile requirements.in --output-file=requirements.txt
+  python -m piptools compile requirements-dev.in --output-file=requirements-dev.txt
+  ```
+
+### 5. Continuous Integration (GitHub Actions) & Code Quality (Ruff)
+- `.github/workflows/ci.yml` runs automated multi-job CI on pushes and PRs:
+  - **Backend**: Python 3.10 setup, `pip install`, `ruff check .` syntax/quality inspection, and full `pytest` suite.
+  - **Frontend**: Node 22 setup, `npm ci`, `npm run lint` (ESLint), and `npm run build` (Next.js production bundle).
+
+---
+
+## ⚠️ Operational Notes
+
+1. **Storage Modes**: The default mode (`AUDIT_STORE=memory`) maintains session telemetry in memory; restarting the backend resets session counters truthfully. For persistent storage across restarts, set `AUDIT_STORE=postgres` and provide `DATABASE_URL`.
 2. **Reference Demonstration Agent**: The `ProtectedAgent` demonstrates the strict context delivery boundary on single-turn reasoning. Enterprise deployments can wrap multi-turn LangChain or AutoGen agents using the same interface.
 3. **Regex Heuristic Boundaries**: Heuristics are optimized for prominent injection and exfiltration patterns; evasions are mitigated by combining heuristics with Moss semantic policies and the Gemini fallback evaluator.
 

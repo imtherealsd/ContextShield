@@ -156,8 +156,16 @@ Public production endpoints to verify system health without secret exposure:
    - `MOSS_INDEX_NAME`
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL=gemini-3.6-flash`
-4. Under **Settings > Networking**, generate a public domain (e.g. `https://contextshield-backend.up.railway.app`).
-5. Verify health:
+   - `AUDIT_STORE=memory` (default)
+4. **Optional PostgreSQL Persistence**:
+   - To persist audit telemetry across deployments, attach a Railway PostgreSQL database.
+   - Set `AUDIT_STORE=postgres` and set `DATABASE_URL` to your PostgreSQL connection string.
+   - Run database migrations:
+     ```bash
+     python -m alembic upgrade head
+     ```
+5. Under **Settings > Networking**, generate a public domain (e.g. `https://contextshield-backend.up.railway.app`).
+6. Verify health:
    ```bash
    curl -s https://<railway-domain>/v1/shield/health
    ```
