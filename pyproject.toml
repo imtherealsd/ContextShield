@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "contextshield"
 version = "1.0.0"
-description = "ContextShield: Zero-Latency Security Gateway & Multi-Layer Defense-in-Depth"
+description = "ContextShield: Low-Latency Security Gateway & Multi-Layer Defense-in-Depth"
 readme = "README.md"
 requires-python = ">=3.10"
 

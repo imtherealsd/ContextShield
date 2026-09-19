@@ -48,7 +48,7 @@ ContextShield defends against the following threat categories:
 
 ## 5. Goals
 
-- **Zero-Latency Design Philosophy**: Deterministic security scanning and local policy retrieval resolve clear safe and blocked requests without an LLM roundtrip.
+- **Fast-Path Design Philosophy**: Deterministic security scanning and configured policy retrieval resolve clear safe and blocked requests without an LLM roundtrip; request timings remain measured observations rather than universal guarantees.
 - **Strict Execution Boundary**: Guarantee downstream AI agents consume approved context only, never raw untrusted context.
 - **Fail-Secure Defaults**: Any timeout, quota exhaustion, or internal failure must default to withholding context (`BLOCK` or `REVIEW`).
 - **Real-Time Voice Ingestion**: Seamless integration with WebRTC voice pipelines (LiveKit Cloud) to evaluate speech transcripts turns with minimal overhead.

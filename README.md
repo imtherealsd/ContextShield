@@ -70,7 +70,7 @@ ContextShield evaluates untrusted context through an asynchronous, defense-in-de
 1. **Schema Gateway**: Rejects malformed structures, boundary violations, and prototype manipulation.
 2. **Parallel Dual-Inspection**:
    - **Deterministic Threat Scanner**: Ultra-fast regex and heuristic rules detecting injection signatures, exfiltration commands, and zero-width character evasion.
-   - **Moss Policy Retrieval**: Queries the local-first Moss runtime loaded with the `contextshield-security` policy index to retrieve semantic security rules.
+   - **Moss Policy Retrieval**: Queries the configured Moss runtime and its `contextshield-security` policy index to retrieve semantic security rules.
 3. **Calibrated Risk Engine**: Applies deterministic precedence rules to evaluate risk scores (0–100).
 4. **Gated Gemini Evaluator**: If and only if the context is classified as ambiguous, ContextShield consults Google Gemini (`gemini-3.6-flash`) using structured JSON schema output.
 5. **Sanitizer & Re-Scan**: Neutralizes isolated hostile directives, leaving surrounding documentation intact, then re-verifies the cleaned context to ensure zero hostile residue remains.
@@ -78,16 +78,16 @@ ContextShield evaluates untrusted context through an asynchronous, defense-in-de
 
 ---
 
-## ⏱️ Zero-Latency Design Story
+## ⏱️ Fast-Path Latency Design
 
 In autonomous AI systems and conversational voice agents, introducing a multi-second LLM evaluation roundtrip on every incoming document is unacceptable.
 
 For the **YC Fall 2026 x Moss Zero Latency Builder Sprint**, ContextShield was architected with a fast-path philosophy:
 
-- **Deterministic Fast Path**: Obvious safe documentation and clear critical blocks are resolved deterministically in **under 1 millisecond** without making a generative model call (`llm_ms = null`).
-- **Moss Local-First Cache**: Semantic security policies are indexed in Moss, providing instant retrieval without round-trip network lag.
+- **Deterministic Fast Path**: Obvious safe documentation and clear critical blocks bypass the generative model (`llm_ms = null`) and report measured gateway timings.
+- **Moss Policy Retrieval**: Moss is queried only when its configured runtime is ready; actual retrieval latency is recorded in the request telemetry.
 - **Gated LLM Invocation**: The slower generative model (Gemini) is strictly gated as an escalation layer for genuinely ambiguous edge cases (target: 800ms, hard timeout: 1500ms).
-- **Observed Performance**: In production benchmarking, deterministic evaluations execute in **~0.4ms – 1.2ms**, delivering sub-millisecond security enforcement for clear-cut contexts. *(Note: Latency values reflect observed demo measurements rather than universal latency guarantees).*
+- **Latency Claims**: The gateway exposes observed per-request timings; it does not claim zero or universal sub-millisecond end-to-end latency.
 
 ---
 
@@ -301,7 +301,7 @@ Visit `http://localhost:3000` to interact with the local dashboard.
 ContextShield maintains a rigorous regression suite covering security invariants, residual neutralization, LiveKit voice handling, and protected boundary enforcement.
 
 ```bash
-# Run backend pytest suite (108 tests)
+# Run backend pytest suite
 python -m pytest -v
 
 # Run frontend build check
@@ -310,7 +310,7 @@ npm run build
 ```
 
 ### Test Suite Summary
-- **Backend Tests**: `107 passed, 1 skipped, 0 failed` (100% passing across 108 tests)
+- **Backend Tests**: `123 passed, 2 skipped, 0 failed` in the final local run. The skipped tests are the live Moss check and the PostgreSQL integration, which requires `DATABASE_URL` (CI provides PostgreSQL 16).
   - `test_scanner.py`: Regex and heuristic detection coverage
   - `test_sanitizer.py`: Hostile instruction removal and post-scan verification
   - `test_risk_engine.py`: Precedence hierarchy, Moss evidence weighting, and decision floor invariants
@@ -346,7 +346,7 @@ YC-Moss/
 │   ├── agent.py              # Cloud Agent worker entrypoint (Transcription-only)
 │   ├── models.py             # RoomSecurityEvent schemas
 │   └── shield_client.py      # Client dispatching voice turns to ContextShield
-├── tests/                    # 108 automated unit, integration, and regression tests
+├── tests/                    # Automated unit, integration, and regression tests
 ├── DEPLOYMENT.md             # Multi-cloud deployment guide (Vercel, Railway, LiveKit)
 ├── LICENSE                   # MIT License
 ├── requirements.txt          # Python dependencies
@@ -359,18 +359,48 @@ YC-Moss/
 
 ContextShield is hardened for enterprise reliability, automated CI/CD validation, and strict privacy invariants:
 
-### 1. Centralized Validated Settings (`pydantic-settings`)
+## Continuous Integration
+
+GitHub Actions validates the backend and frontend on pushes and pull requests. The backend job runs Ruff, the tracked-file secret audit, unit/regression tests, an Alembic migration against PostgreSQL 16, and a real PostgreSQL persistence integration test. The frontend job uses `npm ci`, ESLint, and a Next.js production build.
+
+## Code Quality
+
+Backend quality is checked with Ruff; frontend quality is checked with ESLint and the production build.
+
+## Validated Configuration
+
+`backend/app/core/config.py` is the single backend configuration source, using Pydantic Settings, `SecretStr`, dotenv precedence (`.env` then `.env.local`), and field/model validation. Real environment variables take precedence over both files.
+
+### Centralized Validated Settings (`pydantic-settings`)
 - Application settings reside in [backend/app/core/config.py](backend/app/core/config.py) using Pydantic Settings.
-- Secrets (`GEMINI_API_KEY`, `MOSS_PROJECT_KEY`, `LIVEKIT_API_SECRET`, `DATABASE_URL`) are wrapped in `SecretStr` and automatically masked (`**********`) in string representations and logs.
+- Secrets (`GEMINI_API_KEY`, `MOSS_PROJECT_KEY`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `DATABASE_URL`) are wrapped in `SecretStr` and automatically masked (`**********`) in string representations and logs.
 - Strict numeric validation enforces positive latency thresholds and probability bounds on confidence scores.
 
-### 2. Pluggable Storage Abstraction
+## Persistent Audit Storage
+
+Audit persistence is observability only and never participates in a security verdict:
+
+```text
+Security Decision
+       |
+       +--> SessionTelemetry  (current runtime metrics)
+       |
+       +--> AuditStore
+              +--> MemoryAuditStore
+              +--> PostgresAuditStore (SQLAlchemy async + asyncpg)
+```
+
+The decision is computed before audit persistence. If an audit write fails, the request preserves its existing `SAFE`, `SANITIZE`, `REVIEW`, or `BLOCK` result and protected-agent boundary.
+
+`AUDIT_STORE=memory` is the default hackathon/demo mode: session-friendly, bounded, and requires no external database. `AUDIT_STORE=postgres` enables durable production audit persistence, requires `DATABASE_URL`, and uses the Alembic-managed schema.
+
+### Pluggable Storage Abstraction
 Audit telemetry adheres to the `AuditStore` interface in [backend/app/storage/base.py](backend/app/storage/base.py):
-- **Memory Storage (`AUDIT_STORE=memory`)**: **Default**. Zero-dependency, ephemeral bounded in-memory telemetry suitable for rapid local development, automated test harnesses, and demo environments.
-- **PostgreSQL Persistence (`AUDIT_STORE=postgres`)**: Optional production persistence implemented via SQLAlchemy 2.0 and `asyncpg` in [backend/app/storage/postgres.py](backend/app/storage/postgres.py). Requires `DATABASE_URL`.
+- **Memory Storage (`AUDIT_STORE=memory`)**: **Default**. Bounded, session-friendly in-memory telemetry suitable for local development, automated test harnesses, and demo environments.
+- **PostgreSQL Persistence (`AUDIT_STORE=postgres`)**: Durable production persistence implemented via SQLAlchemy 2.x async APIs and `asyncpg` in [backend/app/storage/postgres.py](backend/app/storage/postgres.py). Requires `DATABASE_URL`.
 - **Strict Privacy Invariant**: Regardless of the storage backend, ContextShield **NEVER** persists raw hostile context, raw audio, or API keys. Only SHA-256 hashes, decision metrics, latency timestamps, and safe redacted previews are saved.
 
-### 3. Database Migrations (Alembic)
+## Database Migrations
 Schema versioning is managed via Alembic:
 ```bash
 # Run database migrations
@@ -378,7 +408,7 @@ python -m alembic upgrade head
 ```
 The migration script [alembic/versions/001_initial_audit_telemetry.py](alembic/versions/001_initial_audit_telemetry.py) establishes the indexed `audit_telemetry` table.
 
-### 4. Deterministic Dependency Management (`pip-tools`)
+## Dependency Reproducibility
 To ensure fully reproducible builds across Railway containers, Docker images, and developer machines:
 - Direct production requirements: `requirements.in`
 - Development requirements: `requirements-dev.in`
@@ -388,16 +418,17 @@ To ensure fully reproducible builds across Railway containers, Docker images, an
   python -m piptools compile requirements-dev.in --output-file=requirements-dev.txt
   ```
 
-### 5. Continuous Integration (GitHub Actions) & Code Quality (Ruff)
-- `.github/workflows/ci.yml` runs automated multi-job CI on pushes and PRs:
-  - **Backend**: Python 3.10 setup, `pip install`, `ruff check .` syntax/quality inspection, and full `pytest` suite.
-  - **Frontend**: Node 22 setup, `npm ci`, `npm run lint` (ESLint), and `npm run build` (Next.js production bundle).
+Pinned Python lockfiles are generated with `pip-tools`, and the frontend uses the committed `frontend/package-lock.json` with `npm ci`.
+
+## Security Testing
+
+Coverage includes the security regression suite, explicit SAFE/SANITIZE/REVIEW/BLOCK boundary tests, audit failure isolation, a tracked-file secret audit, Alembic migration validation, and real PostgreSQL persistence round-trip coverage.
 
 ---
 
 ## ⚠️ Operational Notes
 
-1. **Storage Modes**: The default mode (`AUDIT_STORE=memory`) maintains session telemetry in memory; restarting the backend resets session counters truthfully. For persistent storage across restarts, set `AUDIT_STORE=postgres` and provide `DATABASE_URL`.
+1. **Storage Modes**: `AUDIT_STORE=memory` maintains current-session telemetry in memory; restarting the backend resets those counters. `AUDIT_STORE=postgres` returns persistent audit history across restarts and requires `DATABASE_URL`; the stable demo deployment is not changed by this hardening pass.
 2. **Reference Demonstration Agent**: The `ProtectedAgent` demonstrates the strict context delivery boundary on single-turn reasoning. Enterprise deployments can wrap multi-turn LangChain or AutoGen agents using the same interface.
 3. **Regex Heuristic Boundaries**: Heuristics are optimized for prominent injection and exfiltration patterns; evasions are mitigated by combining heuristics with Moss semantic policies and the Gemini fallback evaluator.
 
@@ -405,7 +436,7 @@ To ensure fully reproducible builds across Railway containers, Docker images, an
 
 ## 🗺️ Future Roadmap
 
-- **Persistent SOC Storage**: Optional ClickHouse / PostgreSQL driver for long-term enterprise event storage.
+- **Long-Term SOC Retention**: Future retention and export policies for the existing audit storage modes.
 - **Customizable Policy Packs**: Dynamic management interface to upload domain-specific compliance rules directly to Moss.
 - **Human-in-the-Loop REVIEW Queue**: Interactive approval workflow for enterprise compliance teams to release held contexts.
 - **Egress Tool Verification**: Intercepting outgoing tool arguments before execution on third-party APIs.

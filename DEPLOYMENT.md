@@ -2,7 +2,7 @@
 
 ## 1. System Architecture
 
-ContextShield is an enterprise-grade, zero-latency security gateway protecting downstream autonomous AI agents and live voice pipelines from untrusted external context, prompt injections, and data exfiltration.
+ContextShield is a low-latency security gateway protecting downstream autonomous AI agents and live voice pipelines from untrusted external context, prompt injections, and data exfiltration.
 
 ```text
                +----------------------------------+
@@ -119,7 +119,7 @@ python -m livekit_voice.agent dev
 ## 5. Production Build & Test Commands
 
 ```bash
-# Run full backend regression suite (108 tests)
+# Run full backend regression suite
 python -m pytest -v
 
 # Run frontend production build validation
@@ -135,7 +135,7 @@ Public production endpoints to verify system health without secret exposure:
 
 - `GET /v1/shield/health`: Verifies gateway status (`{"status": "ok"}`) and Moss index status.
 - `GET /v1/shield/dashboard/health`: Verifies operational telemetry across gateway, Moss, Gemini, and LiveKit.
-- `GET /v1/shield/dashboard/stats`: Returns current session aggregate stats.
+- `GET /v1/shield/dashboard/stats`: Returns current-session aggregate stats in memory mode or persistent audit-history aggregates in PostgreSQL mode.
 - `GET /v1/shield/dashboard/events`: Returns privacy-safe audit trail (no raw transcripts or secret leaks).
 - `GET /v1/shield/dashboard/policies`: Dynamic catalog of security policies loaded from Moss runtime.
 - `POST /v1/shield/demo/protected-agent`: Runs untrusted context through ContextShield and returns protected agent execution status.
@@ -156,11 +156,11 @@ Public production endpoints to verify system health without secret exposure:
    - `MOSS_INDEX_NAME`
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL=gemini-3.6-flash`
-   - `AUDIT_STORE=memory` (default)
+   - `AUDIT_STORE=memory` (default demo mode; session-friendly and requires no external database)
 4. **Optional PostgreSQL Persistence**:
-   - To persist audit telemetry across deployments, attach a Railway PostgreSQL database.
-   - Set `AUDIT_STORE=postgres` and set `DATABASE_URL` to your PostgreSQL connection string.
-   - Run database migrations:
+   - The stable hackathon/demo deployment remains on its existing configuration; this hardening pass does not reconfigure Railway.
+   - For a production deployment that needs durable audit history, attach PostgreSQL, set `AUDIT_STORE=postgres`, and set `DATABASE_URL`. This mode requires the Alembic schema and reports persistent audit history in dashboard telemetry.
+   - Run the Alembic-managed schema migration:
      ```bash
      python -m alembic upgrade head
      ```

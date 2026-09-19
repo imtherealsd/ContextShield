@@ -70,7 +70,7 @@ export function PoliciesView({ policies, mossIndexName, mossStatus }: PoliciesVi
             </span>
           </div>
           <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.25rem" }}>
-            Policies seeded into Moss Local Runtime index (<code>{mossIndexName || "contextshield-security"}</code>) for zero-latency in-memory vector matching (~2ms).
+              Policies available through the Moss runtime index (<code>{mossIndexName || "contextshield-security"}</code>); retrieval timing is reported per request when available.
           </p>
         </div>
 
