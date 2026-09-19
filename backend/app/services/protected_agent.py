@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
+from backend.app.core.config import get_settings
 from google import genai
 from google.genai import types
 
@@ -53,8 +54,9 @@ class ProtectedAgent:
         model: Optional[str] = None,
         timeout_sec: float = 5.0,
     ):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model = model or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+        settings = get_settings()
+        self.api_key = api_key or settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
+        self.model = model or settings.GEMINI_MODEL or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
         self.timeout_sec = timeout_sec
 
         self.configured = bool(self.api_key and not self.api_key.startswith("your_"))

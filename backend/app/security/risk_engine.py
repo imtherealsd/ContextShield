@@ -16,7 +16,7 @@ Moss Semantic Policy Integration:
 """
 
 import os
-from typing import Any, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 from backend.app.models.responses import (
     Decision,
     LLMRiskEvaluation,
@@ -28,9 +28,12 @@ from backend.app.models.responses import (
 from backend.app.security.sanitizer import ContentSanitizer
 from backend.app.security.schema_gateway import GatewayContext
 
+from backend.app.core.config import get_settings
+
 # Configurable Moss confidence thresholds
-MOSS_HIGH_CONFIDENCE_SCORE = float(os.getenv("MOSS_HIGH_CONFIDENCE_SCORE", "0.90"))
-MOSS_SUPPORTING_SCORE = float(os.getenv("MOSS_SUPPORTING_SCORE", "0.80"))
+_settings = get_settings()
+MOSS_HIGH_CONFIDENCE_SCORE = float(os.getenv("MOSS_HIGH_CONFIDENCE_SCORE", str(_settings.MOSS_HIGH_CONFIDENCE_SCORE)))
+MOSS_SUPPORTING_SCORE = float(os.getenv("MOSS_SUPPORTING_SCORE", str(_settings.MOSS_SUPPORTING_SCORE)))
 
 
 def is_aligned_moss_policy(m: MossPolicyMatch, findings: List[ThreatFinding]) -> bool:

@@ -28,16 +28,15 @@ from pydantic import ValidationError
 
 load_dotenv()
 
+from backend.app.core.config import get_settings
 from google import genai
 from google.genai import types
 
 from backend.app.models.requests import SourceType
 from backend.app.models.responses import (
-    Decision,
     LLMIngestStatus,
     LLMRiskEvaluation,
     MossPolicyMatch,
-    Severity,
     ThreatCategory,
     ThreatFinding,
 )
@@ -63,15 +62,18 @@ class BaseRiskEvaluator(ABC):
         self.prompt_version = PROMPT_VERSION
         self.prompt_hash = PROMPT_HASH
 
-        self.target_latency_ms = (
-            target_latency_ms
-            if target_latency_ms is not None
-            else float(os.getenv("LLM_TARGET_LATENCY_MS", os.getenv("LLM_PRIMARY_TIMEOUT_MS", "800")))
-        )
+        settings = get_settings()
+        if target_latency_ms is not None:
+            self.target_latency_ms = target_latency_ms
+        elif settings.LLM_PRIMARY_TIMEOUT_MS is not None:
+            self.target_latency_ms = settings.LLM_PRIMARY_TIMEOUT_MS
+        else:
+            self.target_latency_ms = float(os.getenv("LLM_TARGET_LATENCY_MS", os.getenv("LLM_PRIMARY_TIMEOUT_MS", str(settings.LLM_TARGET_LATENCY_MS))))
+
         self.hard_timeout_ms = (
             hard_timeout_ms
             if hard_timeout_ms is not None
-            else float(os.getenv("LLM_HARD_TIMEOUT_MS", "1500"))
+            else float(os.getenv("LLM_HARD_TIMEOUT_MS", str(settings.LLM_HARD_TIMEOUT_MS)))
         )
         self.timeout_sec = self.hard_timeout_ms / 1000.0
 
@@ -204,8 +206,9 @@ class GeminiRiskEvaluator(BaseRiskEvaluator):
             target_latency_ms=target_latency_ms,
             hard_timeout_ms=hard_timeout_ms,
         )
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self._model = model or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+        settings = get_settings()
+        self.api_key = api_key or settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
+        self._model = model or settings.GEMINI_MODEL or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
         self._client: Optional[genai.Client] = None
         if self.api_key:
@@ -241,7 +244,8 @@ class GeminiRiskEvaluator(BaseRiskEvaluator):
             return self._configured_override
         if not self.api_key:
             load_dotenv()
-            self.api_key = os.getenv("GEMINI_API_KEY")
+            settings = get_settings()
+            self.api_key = settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
         if self.api_key and not self._client:
             http_options = types.HttpOptions(
                 retry_options=types.HttpRetryOptions(attempts=1),
@@ -403,7 +407,8 @@ class ContextualEvaluatorRouter(BaseRiskEvaluator):
     @property
     def provider(self) -> str:
         load_dotenv()
-        return os.getenv("LLM_PROVIDER", "gemini").lower()
+        settings = get_settings()
+        return (os.getenv("LLM_PROVIDER") or settings.LLM_PROVIDER or "gemini").lower()
 
     @property
     def active_evaluator(self) -> Optional[BaseRiskEvaluator]:

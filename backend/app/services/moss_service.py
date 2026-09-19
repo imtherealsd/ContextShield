@@ -4,6 +4,7 @@ import os
 import time
 from typing import Any, List, Optional, Tuple
 from dotenv import load_dotenv
+from backend.app.core.config import get_settings
 from backend.app.models.responses import MossPolicyMatch
 
 # Load environment variables from .env if present
@@ -38,9 +39,22 @@ class MossSecurityRetriever:
         index_name: Optional[str] = None,
     ):
         load_dotenv()
-        self.project_id = os.getenv("MOSS_PROJECT_ID") if project_id is None else project_id
-        self.project_key = os.getenv("MOSS_PROJECT_KEY") if project_key is None else project_key
-        self.index_name = os.getenv("MOSS_INDEX_NAME", "contextshield-security") if index_name is None else index_name
+        settings = get_settings()
+        self.project_id = (
+            project_id
+            if project_id is not None
+            else (settings.MOSS_PROJECT_ID or os.getenv("MOSS_PROJECT_ID"))
+        )
+        self.project_key = (
+            project_key
+            if project_key is not None
+            else (settings.get_moss_project_key() or os.getenv("MOSS_PROJECT_KEY"))
+        )
+        self.index_name = (
+            index_name
+            if index_name is not None
+            else (settings.MOSS_INDEX_NAME or os.getenv("MOSS_INDEX_NAME", "contextshield-security"))
+        )
         self.client: Optional[Any] = None
         self.loaded: bool = False
         self.error_message: Optional[str] = None
@@ -53,12 +67,13 @@ class MossSecurityRetriever:
     async def initialize(self) -> None:
         """Initializes the Moss client and loads the security index on startup."""
         load_dotenv()
+        settings = get_settings()
         if self.project_id is None:
-            self.project_id = os.getenv("MOSS_PROJECT_ID")
+            self.project_id = settings.MOSS_PROJECT_ID or os.getenv("MOSS_PROJECT_ID")
         if self.project_key is None:
-            self.project_key = os.getenv("MOSS_PROJECT_KEY")
+            self.project_key = settings.get_moss_project_key() or os.getenv("MOSS_PROJECT_KEY")
         if self.index_name is None:
-            self.index_name = os.getenv("MOSS_INDEX_NAME", "contextshield-security")
+            self.index_name = settings.MOSS_INDEX_NAME or os.getenv("MOSS_INDEX_NAME", "contextshield-security")
 
         if not self.project_id or not self.project_key:
             self.status = "not_configured"
