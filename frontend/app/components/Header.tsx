@@ -29,7 +29,7 @@ export function Header({
   backendAvailable = true,
 }: HeaderProps) {
   const isHealthy = backendAvailable && health?.gateway === "healthy";
-  const mossReady = health?.moss?.status === "ready";
+  const mossReady = health?.moss?.status === "ready" && health.moss.loaded === true;
   const mossStatus = health?.moss?.status || "unknown";
   const geminiStatus = health?.gemini?.last_status || "not_called";
   const hasRecentVoice = health?.livekit?.recent_activity;
@@ -155,7 +155,13 @@ export function Header({
               color: mossReady ? "#10b981" : mossStatus === "error" ? "#f59e0b" : "var(--text-muted)",
             }}
           >
-            {mossReady ? "Ready (Local Index)" : mossStatus === "error" ? "Fail-Secure (Ready)" : mossStatus}
+            {mossReady
+              ? "Ready (Local Index)"
+              : mossStatus === "error"
+              ? "Unavailable (Fail-Secure)"
+              : mossStatus === "not_configured"
+              ? "Not Configured"
+              : mossStatus}
           </span>
         </div>
 
