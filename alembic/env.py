@@ -1,10 +1,14 @@
+"""Alembic environment supporting async PostgreSQL connections."""
+
+import asyncio
 from logging.config import fileConfig
-import os
-from sqlalchemy import pool, create_engine
+
 from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from backend.app.core.config import get_settings
-from backend.app.storage.postgres import Base, AuditTelemetryModel  # noqa: F401
+from backend.app.storage.postgres import Base, normalize_database_url
 
 config = context.config
 
@@ -15,24 +19,22 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    """Dynamically resolve database connection URL from settings or environment."""
+    """Resolve the configured database URL without logging credentials."""
     settings = get_settings()
-    db_url = settings.get_database_url() or os.getenv("DATABASE_URL")
+    db_url = settings.get_database_url()
     if db_url and db_url.strip():
-        if db_url.startswith("postgresql+asyncpg://"):
-            db_url = db_url.replace("postgresql+asyncpg://", "postgresql://", 1)
-        return db_url
-    raw_cfg = config.get_main_option("sqlalchemy.url")
-    if raw_cfg and not raw_cfg.startswith("driver://"):
-        return raw_cfg
-    return "sqlite:///contextshield.db"
+        return normalize_database_url(db_url)
+
+    raw_config_url = config.get_main_option("sqlalchemy.url")
+    if raw_config_url and not raw_config_url.startswith("driver://"):
+        return normalize_database_url(raw_config_url)
+    return normalize_database_url("sqlite:///contextshield.db")
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
-    url = get_url()
+    """Run migrations in offline mode."""
     context.configure(
-        url=url,
+        url=get_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -42,19 +44,26 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def do_run_migrations(connection) -> None:
+    """Run synchronous Alembic operations through an async connection."""
+    context.configure(connection=connection, target_metadata=target_metadata)
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
+    """Create an async engine and run Alembic through ``run_sync``."""
+    connectable = create_async_engine(get_url(), poolclass=pool.NullPool)
+    try:
+        async with connectable.connect() as connection:
+            await connection.run_sync(do_run_migrations)
+    finally:
+        await connectable.dispose()
+
+
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    url = get_url()
-    # Create engine directly from resolved URL
-    connectable = create_engine(url, poolclass=pool.NullPool)
-
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
+    """Run migrations online using the async SQLAlchemy driver."""
+    asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():
