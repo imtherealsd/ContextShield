@@ -1,0 +1,6 @@
+# Development & testing dependencies for ContextShield
+-r requirements.in
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+ruff
+pip-tools
