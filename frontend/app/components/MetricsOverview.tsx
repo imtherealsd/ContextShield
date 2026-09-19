@@ -256,7 +256,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
               <strong className="font-mono" style={{ color: "var(--text-primary)" }}>
                 {stats?.average_moss_ms !== null && stats?.average_moss_ms !== undefined
                   ? `${stats.average_moss_ms} ms`
-                  : "— (local index ready)"}
+                  : "— (no observed query)"}
               </strong>
             </div>
 
@@ -322,7 +322,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
           </div>
 
           <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-            Deterministic Scanner + Moss Local Runtime resolve definitive threats and safe context in ~2ms, completely avoiding costly and slow LLM evaluation.
+            Deterministic scanning and available Moss policy retrieval resolve clear cases without an LLM call; observed latency is measured per request.
           </p>
 
           <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
