@@ -12,13 +12,9 @@ CRITICAL ARCHITECTURAL CONTRACT:
 
 import asyncio
 import logging
-import os
 import time
 from typing import Optional
-from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-
-load_dotenv()
 
 from backend.app.core.config import get_settings
 from google import genai
@@ -55,8 +51,8 @@ class ProtectedAgent:
         timeout_sec: float = 5.0,
     ):
         settings = get_settings()
-        self.api_key = api_key or settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
-        self.model = model or settings.GEMINI_MODEL or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+        self.api_key = api_key or settings.get_gemini_api_key()
+        self.model = model or settings.GEMINI_MODEL
         self.timeout_sec = timeout_sec
 
         self.configured = bool(self.api_key and not self.api_key.startswith("your_"))

@@ -15,7 +15,6 @@ Moss Semantic Policy Integration:
 - High-relevance Moss policy matches strengthen detection for ambiguous cases.
 """
 
-import os
 from typing import List, Optional, Tuple, Union
 from backend.app.models.responses import (
     Decision,
@@ -32,8 +31,8 @@ from backend.app.core.config import get_settings
 
 # Configurable Moss confidence thresholds
 _settings = get_settings()
-MOSS_HIGH_CONFIDENCE_SCORE = float(os.getenv("MOSS_HIGH_CONFIDENCE_SCORE", str(_settings.MOSS_HIGH_CONFIDENCE_SCORE)))
-MOSS_SUPPORTING_SCORE = float(os.getenv("MOSS_SUPPORTING_SCORE", str(_settings.MOSS_SUPPORTING_SCORE)))
+MOSS_HIGH_CONFIDENCE_SCORE = _settings.MOSS_HIGH_CONFIDENCE_SCORE
+MOSS_SUPPORTING_SCORE = _settings.MOSS_SUPPORTING_SCORE
 
 
 def is_aligned_moss_policy(m: MossPolicyMatch, findings: List[ThreatFinding]) -> bool:

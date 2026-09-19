@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     """Production configuration model for ContextShield."""
 
     model_config = SettingsConfigDict(
+        # pydantic-settings loads later dotenv files over earlier ones while
+        # real environment variables remain higher precedence.
         env_file=(".env", ".env.local"),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -40,7 +42,7 @@ class Settings(BaseSettings):
 
     # LiveKit Voice & Edge Agent Configuration
     LIVEKIT_URL: Optional[str] = None
-    LIVEKIT_API_KEY: Optional[str] = None
+    LIVEKIT_API_KEY: Optional[SecretStr] = None
     LIVEKIT_API_SECRET: Optional[SecretStr] = None
     LIVEKIT_STT_MODEL: str = "deepgram/nova-3"
     LIVEKIT_STT_LANGUAGE: str = "en"
@@ -50,10 +52,10 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
 
-    @field_validator("LLM_TARGET_LATENCY_MS", "LLM_HARD_TIMEOUT_MS")
+    @field_validator("LLM_TARGET_LATENCY_MS", "LLM_HARD_TIMEOUT_MS", "LLM_PRIMARY_TIMEOUT_MS")
     @classmethod
-    def validate_latency(cls, v: float) -> float:
-        if v <= 0:
+    def validate_latency(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and v <= 0:
             raise ValueError("Latency timeouts must be strictly positive numbers.")
         return v
 
@@ -86,6 +88,9 @@ class Settings(BaseSettings):
 
     def get_livekit_api_secret(self) -> Optional[str]:
         return self.LIVEKIT_API_SECRET.get_secret_value() if self.LIVEKIT_API_SECRET else None
+
+    def get_livekit_api_key(self) -> Optional[str]:
+        return self.LIVEKIT_API_KEY.get_secret_value() if self.LIVEKIT_API_KEY else None
 
 
 @lru_cache(maxsize=1)

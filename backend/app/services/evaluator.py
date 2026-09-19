@@ -19,14 +19,10 @@ from abc import ABC, abstractmethod
 import asyncio
 import json
 import logging
-import os
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from dotenv import load_dotenv
 from pydantic import ValidationError
-
-load_dotenv()
 
 from backend.app.core.config import get_settings
 from google import genai
@@ -68,12 +64,12 @@ class BaseRiskEvaluator(ABC):
         elif settings.LLM_PRIMARY_TIMEOUT_MS is not None:
             self.target_latency_ms = settings.LLM_PRIMARY_TIMEOUT_MS
         else:
-            self.target_latency_ms = float(os.getenv("LLM_TARGET_LATENCY_MS", os.getenv("LLM_PRIMARY_TIMEOUT_MS", str(settings.LLM_TARGET_LATENCY_MS))))
+            self.target_latency_ms = settings.LLM_TARGET_LATENCY_MS
 
         self.hard_timeout_ms = (
             hard_timeout_ms
             if hard_timeout_ms is not None
-            else float(os.getenv("LLM_HARD_TIMEOUT_MS", str(settings.LLM_HARD_TIMEOUT_MS)))
+            else settings.LLM_HARD_TIMEOUT_MS
         )
         self.timeout_sec = self.hard_timeout_ms / 1000.0
 
@@ -207,8 +203,8 @@ class GeminiRiskEvaluator(BaseRiskEvaluator):
             hard_timeout_ms=hard_timeout_ms,
         )
         settings = get_settings()
-        self.api_key = api_key or settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
-        self._model = model or settings.GEMINI_MODEL or os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+        self.api_key = api_key or settings.get_gemini_api_key()
+        self._model = model or settings.GEMINI_MODEL
 
         self._client: Optional[genai.Client] = None
         if self.api_key:
@@ -243,9 +239,8 @@ class GeminiRiskEvaluator(BaseRiskEvaluator):
         if self._configured_override is not None:
             return self._configured_override
         if not self.api_key:
-            load_dotenv()
             settings = get_settings()
-            self.api_key = settings.get_gemini_api_key() or os.getenv("GEMINI_API_KEY")
+            self.api_key = settings.get_gemini_api_key()
         if self.api_key and not self._client:
             http_options = types.HttpOptions(
                 retry_options=types.HttpRetryOptions(attempts=1),
@@ -406,9 +401,8 @@ class ContextualEvaluatorRouter(BaseRiskEvaluator):
 
     @property
     def provider(self) -> str:
-        load_dotenv()
         settings = get_settings()
-        return (os.getenv("LLM_PROVIDER") or settings.LLM_PROVIDER or "gemini").lower()
+        return (settings.LLM_PROVIDER or "gemini").lower()
 
     @property
     def active_evaluator(self) -> Optional[BaseRiskEvaluator]:

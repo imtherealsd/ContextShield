@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
+from backend.app.core.config import Settings
 from backend.app.models.requests import IngestRequest, SourceType
 from backend.app.models.responses import (
     Decision,
@@ -108,10 +109,10 @@ def test_provider_selection_gemini(gemini_evaluator_configured):
 
 def test_invalid_provider_fails_secure(client: TestClient):
     """Test: Invalid LLM_PROVIDER must fail secure with explicit invalid_provider status."""
-    orig_provider = os.environ.get("LLM_PROVIDER")
-    os.environ["LLM_PROVIDER"] = "unsupported_provider_xyz"
-
-    try:
+    with patch(
+        "backend.app.services.evaluator.get_settings",
+        return_value=Settings(_env_file=None, LLM_PROVIDER="unsupported_provider_xyz"),
+    ):
         assert evaluator_service.provider == "unsupported_provider_xyz"
         assert evaluator_service.configured is False
 
@@ -140,11 +141,6 @@ def test_invalid_provider_fails_secure(client: TestClient):
         assert data["agent_context"] is None
         assert data["llm"]["status"] == "invalid_provider"
         assert data["llm"]["called"] is False
-    finally:
-        if orig_provider is not None:
-            os.environ["LLM_PROVIDER"] = orig_provider
-        else:
-            os.environ.pop("LLM_PROVIDER", None)
 
 
 def test_missing_gemini_api_key_fails_secure():
@@ -491,7 +487,7 @@ def test_gemini_secret_never_appears_in_logs_or_status(client: TestClient, gemin
         assert secret_key not in raw_json_str
 
         # Check audit records
-        records = audit_service.get_records()
+        records = asyncio.run(audit_service.get_records())
         for rec in records:
             assert secret_key not in str(rec)
 
@@ -768,4 +764,3 @@ def test_real_gemini_live_integration(client: TestClient):
     assert block_data["agent_context"] is None
     assert block_data["llm"]["called"] is False
     assert block_data["llm"]["status"] == "not_called"
-
