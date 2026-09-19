@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from backend.app.models.requests import SourceType
 from backend.app.models.responses import Decision, LatencyStats, ThreatFinding
+from backend.app.storage import AuditStore, get_audit_store
 
 logger = logging.getLogger("contextshield.audit")
 
@@ -20,8 +21,8 @@ class AuditService:
       decision metrics, and safe truncated previews.
     """
 
-    def __init__(self):
-        self._records: List[Dict[str, Any]] = []
+    def __init__(self, store: Optional[AuditStore] = None):
+        self._store: AuditStore = store if store is not None else get_audit_store()
 
     def record_event(
         self,
@@ -82,7 +83,7 @@ class AuditService:
                 "provider_request_id": getattr(llm_status, "provider_request_id", None),
             }
 
-        self._records.append(record)
+        self._store.record_event(record)
         logger.info(
             "Audit event: request_id=%s decision=%s risk_score=%.1f rules=%s",
             request_id,
@@ -92,13 +93,22 @@ class AuditService:
         )
         return record
 
-    def get_records(self) -> List[Dict[str, Any]]:
-        """Returns in-memory audit records (useful for verification and testing)."""
-        return list(self._records)
+    @property
+    def store(self) -> AuditStore:
+        """Returns the underlying configured audit store."""
+        return self._store
+
+    @store.setter
+    def store(self, new_store: AuditStore) -> None:
+        self._store = new_store
+
+    def get_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Returns audit records from the underlying store."""
+        return self._store.get_records(limit=limit)
 
     def clear(self) -> None:
-        """Clears in-memory audit logs."""
-        self._records.clear()
+        """Clears audit logs."""
+        self._store.clear()
 
 
 # Global audit singleton

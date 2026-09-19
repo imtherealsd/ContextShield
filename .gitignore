@@ -16,9 +16,11 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.log
 .mypy_cache/
 .ruff_cache/
+*.db
+*.sqlite
+*.sqlite3
 
 # Node / Next.js
 node_modules/
