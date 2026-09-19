@@ -15,11 +15,12 @@ export async function GET() {
     }
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
       {
         gateway: "unavailable",
-        error: err.message,
+        error: message,
         moss: { status: "unknown", loaded: false },
         gemini: { configured: false, model: null, last_status: "unknown" },
         livekit: { last_voice_event_at: null, recent_activity: false },

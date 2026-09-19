@@ -115,8 +115,8 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
 
       const data: DemoResult = await res.json();
       setDemoResult(data);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to execute evaluation");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to execute evaluation");
     } finally {
       setIsRunning(false);
     }
@@ -567,7 +567,7 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
                     padding: "2rem",
                   }}
                 >
-                  Click "Run Protected Agent Evaluation" to inspect the gateway decision.
+                  Click &quot;Run Protected Agent Evaluation&quot; to inspect the gateway decision.
                 </div>
               )}
             </div>
@@ -748,7 +748,7 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
             </div>
             <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
               Raw untrusted context (scraped HTML, API responses, customer voice transcripts) is passed directly into
-              the downstream LLM's prompt context.
+              the downstream LLM&apos;s prompt context.
             </p>
             <div
               className="font-mono"

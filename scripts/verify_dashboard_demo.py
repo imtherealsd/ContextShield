@@ -44,7 +44,7 @@ def main():
         "agent_id": "demo_agent_1"
     }
     safe_res = post("ingest", safe_payload)
-    print(f"Scenario 1 (SAFE):")
+    print("Scenario 1 (SAFE):")
     print(f"  Decision: {safe_res.get('decision')}")
     print(f"  Risk Score: {safe_res.get('risk_score')}")
     print(f"  Approved Context Present: {safe_res.get('agent_context') is not None}")
@@ -57,7 +57,7 @@ def main():
         "agent_id": "demo_agent_1"
     }
     sanitize_res = post("ingest", sanitize_payload)
-    print(f"\nScenario 2 (SANITIZE):")
+    print("\nScenario 2 (SANITIZE):")
     print(f"  Original Synthetic Input: {sanitize_payload['content']}")
     print(f"  Final Decision: {sanitize_res.get('decision')}")
     print(f"  Risk Score: {sanitize_res.get('risk_score')}")
@@ -75,7 +75,7 @@ def main():
         "agent_id": "demo_agent_1"
     }
     block_res = post("ingest", block_payload)
-    print(f"\nScenario 3 (BLOCK):")
+    print("\nScenario 3 (BLOCK):")
     print(f"  Decision: {block_res.get('decision')}")
     print(f"  Risk Score: {block_res.get('risk_score')}")
     print(f"  Approved Context Present: {block_res.get('agent_context') is not None}")
@@ -88,7 +88,7 @@ def main():
         "agent_id": "demo_agent_1"
     }
     review_res = post("ingest", review_payload)
-    print(f"\nScenario 4 (REVIEW):")
+    print("\nScenario 4 (REVIEW):")
     print(f"  Decision: {review_res.get('decision')}")
     print(f"  Risk Score: {review_res.get('risk_score')}")
     print(f"  Approved Context Present: {review_res.get('agent_context') is not None}")

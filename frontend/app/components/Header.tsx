@@ -2,7 +2,7 @@
 
 import React from "react";
 
-interface HealthData {
+export interface HealthData {
   gateway: string;
   moss: { status: string; loaded: boolean; index_name?: string };
   gemini: { configured: boolean; model?: string; last_status?: string };

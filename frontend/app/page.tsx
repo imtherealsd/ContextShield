@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Header } from "./components/Header";
+import { Header, HealthData } from "./components/Header";
 import { Navigation, TabKey } from "./components/Navigation";
 import { MetricsOverview, DashboardStats } from "./components/MetricsOverview";
 import { LiveFeed } from "./components/LiveFeed";
-import { VoicePanel } from "./components/VoicePanel";
+import { VoicePanel, VoiceTurnEvent } from "./components/VoicePanel";
 import { ProtectedAgentView } from "./components/ProtectedAgentView";
 import { PoliciesView, PolicyItem } from "./components/PoliciesView";
 import { ArchitectureView } from "./components/ArchitectureView";
@@ -19,11 +19,11 @@ export default function DashboardPage() {
   // Telemetry States
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [events, setEvents] = useState<SecurityEvent[]>([]);
-  const [voiceTurns, setVoiceTurns] = useState<any[]>([]);
+  const [voiceTurns, setVoiceTurns] = useState<VoiceTurnEvent[]>([]);
   const [policies, setPolicies] = useState<PolicyItem[]>([]);
   const [mossIndexName, setMossIndexName] = useState<string>("contextshield-security");
   const [mossStatus, setMossStatus] = useState<string>("ready");
-  const [health, setHealth] = useState<any>(null);
+  const [health, setHealth] = useState<HealthData | null>(null);
   const [backendAvailable, setBackendAvailable] = useState<boolean>(true);
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -77,9 +77,22 @@ export default function DashboardPage() {
 
   // Poll every 1.5 seconds for real-time responsiveness
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 1500);
-    return () => clearInterval(interval);
+    let mounted = true;
+    const timer = setTimeout(() => {
+      if (mounted) {
+        void fetchData();
+      }
+    }, 0);
+    const interval = setInterval(() => {
+      if (mounted) {
+        void fetchData();
+      }
+    }, 1500);
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [fetchData]);
 
   return (

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextshield"
+version = "1.0.0"
+description = "ContextShield: Zero-Latency Security Gateway & Multi-Layer Defense-in-Depth"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [
+    ".git",
+    ".pytest_cache",
+    "node_modules",
+    ".next",
+    "frontend",
+    "scratch",
+    "artifacts",
+    "brain",
+]
+
+[tool.ruff.lint]
+# Target real issues: syntax, unused imports, undefined variables, runtime errors
+select = [
+    "E9",  # Syntax and runtime errors
+    "F",   # Pyflakes: unused imports (F401), undefined variables (F821), etc.
+]
+ignore = [
+    "F403",  # Star imports if used in tests
+    "F405",  # Star imports definitions
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F401", "F841"]
+"scripts/*" = ["F401", "F841"]
+
+

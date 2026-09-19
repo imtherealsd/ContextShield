@@ -126,7 +126,7 @@ export function LiveFeed({ events, onSelectEvent, loading }: LiveFeedProps) {
         >
           No events found matching selected filters.
           <p style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
-            Trigger an evaluation using the <strong>"Simulate Ingestion"</strong> button above or speak into the LiveKit Console microphone.
+            Trigger an evaluation using the <strong>&quot;Simulate Ingestion&quot;</strong> button above or speak into the LiveKit Console microphone.
           </p>
         </div>
       ) : (
@@ -135,7 +135,6 @@ export function LiveFeed({ events, onSelectEvent, loading }: LiveFeedProps) {
             const isSafe = ev.decision === "SAFE";
             const isSanitize = ev.decision === "SANITIZE";
             const isReview = ev.decision === "REVIEW";
-            const isBlock = ev.decision === "BLOCK";
 
             const badgeColor = isSafe
               ? "var(--badge-safe-text)"

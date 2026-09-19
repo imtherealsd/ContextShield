@@ -3,8 +3,27 @@
 import React from "react";
 import { SecurityEvent } from "./EventDrawer";
 
+export interface VoiceTurnEvent {
+  turn_id?: string;
+  room_name?: string;
+  participant_identity?: string;
+  request_id?: string;
+  decision?: string;
+  risk_score?: number;
+  threat_categories?: string[];
+  matched_policy_ids?: string[];
+  moss_ms?: number | null;
+  llm_called?: boolean;
+  llm_status?: string;
+  shield_total_ms?: number;
+  voice_to_decision_ms?: number;
+  redacted_preview?: string;
+  approved_context_available?: boolean;
+  timestamp?: string;
+}
+
 interface VoicePanelProps {
-  voiceTurns: any[];
+  voiceTurns: VoiceTurnEvent[];
   onSelectEvent: (event: SecurityEvent) => void;
 }
 
@@ -28,52 +47,44 @@ export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <span style={{ fontSize: "1.25rem" }}>🎙️</span>
-            <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>
-              LiveKit Real-Time Voice Ingestion
+            <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)" }}>
+              LiveKit Voice Security Boundary
             </h2>
             <span
               style={{
                 fontSize: "0.6875rem",
+                fontWeight: 600,
                 padding: "0.125rem 0.5rem",
                 borderRadius: "9999px",
-                backgroundColor: "rgba(16, 185, 129, 0.1)",
-                color: "#10b981",
-                border: "1px solid rgba(16, 185, 129, 0.3)",
-                fontWeight: 600,
+                backgroundColor: "rgba(59, 130, 246, 0.12)",
+                color: "var(--accent-blue)",
+                border: "1px solid rgba(59, 130, 246, 0.3)",
               }}
             >
               deepgram/nova-3 STT
             </span>
           </div>
-          <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.25rem" }}>
-            Real-time audio transcribed on LiveKit Cloud (`India South`) and gated through ContextShield before any text reaches recipient AI agents.
+          <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "0.25rem", maxWidth: "800px" }}>
+            Every spoken turn is intercepted at the LiveKit edge, evaluated against Moss security policies,
+            and gated before reaching the protected downstream agent.
           </p>
         </div>
 
-        {/* Privacy Invariant Seal */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 0.75rem",
-            borderRadius: "6px",
-            backgroundColor: "var(--bg-canvas)",
-            border: "1px solid var(--border-strong)",
-            fontSize: "0.75rem",
-            color: "var(--text-secondary)",
-          }}
-        >
-          <span style={{ color: "#10b981", fontSize: "0.875rem" }}>🔒</span>
-          <span>Zero raw hostile audio or transcripts stored in telemetry</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Total Spoken Turns</div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
+              {voiceTurns.length}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Voice Turns List */}
+      {/* Voice Events Stream */}
       {voiceTurns.length === 0 ? (
         <div
           style={{
-            padding: "3.5rem",
+            padding: "3rem",
             textAlign: "center",
             color: "var(--text-muted)",
             fontSize: "0.875rem",
@@ -91,7 +102,6 @@ export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {voiceTurns.map((turn, idx) => {
             const isSafe = turn.decision === "SAFE";
-            const isBlock = turn.decision === "BLOCK";
             const isReview = turn.decision === "REVIEW";
 
             const badgeColor = isSafe ? "#10b981" : isReview ? "#f59e0b" : "#ef4444";
@@ -106,12 +116,12 @@ export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
                 key={turn.turn_id || idx}
                 onClick={() =>
                   onSelectEvent({
-                    request_id: turn.request_id || turn.turn_id,
+                    request_id: turn.request_id || turn.turn_id || "unknown",
                     turn_id: turn.turn_id,
-                    timestamp: turn.timestamp,
+                    timestamp: turn.timestamp || new Date().toISOString(),
                     source: "livekit_voice",
-                    decision: turn.decision,
-                    risk_score: turn.risk_score,
+                    decision: turn.decision || "BLOCK",
+                    risk_score: turn.risk_score ?? 0,
                     threat_categories: turn.threat_categories || [],
                     triggered_rule_ids: turn.matched_policy_ids || [],
                     matched_policy_ids: turn.matched_policy_ids || [],
@@ -120,11 +130,11 @@ export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
                       total_ms: turn.shield_total_ms,
                       voice_to_decision_ms: turn.voice_to_decision_ms,
                     },
-                    redacted_preview: turn.redacted_preview,
-                    approved_context_available: turn.approved_context_available,
+                    redacted_preview: turn.redacted_preview || "",
+                    approved_context_available: Boolean(turn.approved_context_available),
                     participant_identity: turn.participant_identity,
                     room_name: turn.room_name,
-                    llm: turn.llm_called ? { called: true, status: turn.llm_status } : null,
+                    llm: turn.llm_called ? { called: true, status: turn.llm_status || "unknown" } : null,
                   })
                 }
                 style={{

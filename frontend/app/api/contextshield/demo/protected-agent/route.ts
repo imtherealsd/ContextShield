@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
     });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "Backend unavailable", message: err.message },
+      { error: "Backend unavailable", message },
       { status: 503 }
     );
   }

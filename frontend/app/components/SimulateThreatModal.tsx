@@ -35,12 +35,30 @@ const PRESETS = [
   },
 ];
 
+interface ThreatFindingItem {
+  category?: string;
+  rule_id?: string;
+  description?: string;
+}
+
+interface SimulateResult {
+  decision?: string;
+  risk_score?: number;
+  latency?: {
+    total_ms?: number;
+    scanner_ms?: number;
+    moss_ms?: number | null;
+    llm_ms?: number | null;
+  };
+  detected_threats?: ThreatFindingItem[];
+}
+
 export function SimulateThreatModal({ isOpen, onClose, onSuccess }: SimulateThreatModalProps) {
   const [selectedPreset, setSelectedPreset] = useState<number>(0);
   const [customContent, setCustomContent] = useState<string>(PRESETS[0].content);
   const [sourceType, setSourceType] = useState<string>(PRESETS[0].source);
   const [loading, setLoading] = useState<boolean>(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<SimulateResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -75,8 +93,8 @@ export function SimulateThreatModal({ isOpen, onClose, onSuccess }: SimulateThre
       }
       setResult(data);
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Failed to connect to ContextShield Gateway");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to connect to ContextShield Gateway");
     } finally {
       setLoading(false);
     }
@@ -319,7 +337,7 @@ export function SimulateThreatModal({ isOpen, onClose, onSuccess }: SimulateThre
                 <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
                   Detected Threat Categories:{" "}
                   <span style={{ color: "var(--text-primary)" }}>
-                    {result.detected_threats.map((f: any) => f.category).join(", ")}
+                    {result.detected_threats.map((f) => f.category).filter(Boolean).join(", ")}
                   </span>
                 </div>
               )}

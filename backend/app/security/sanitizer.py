@@ -1,7 +1,7 @@
 """Content Sanitization for isolated non-critical threats."""
 
 import re
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple
 from backend.app.models.responses import Severity, ThreatCategory, ThreatFinding
 
 

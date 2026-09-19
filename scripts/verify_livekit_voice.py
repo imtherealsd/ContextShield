@@ -40,8 +40,8 @@ async def main():
     livekit_secret = os.getenv("LIVEKIT_API_SECRET")
     stt_model = os.getenv("LIVEKIT_STT_MODEL", "deepgram/nova-3")
 
-    print(f"\n[1] Environment & SDK Configuration:")
-    print(f"    - LiveKit Agents version: 1.8.2")
+    print("\n[1] Environment & SDK Configuration:")
+    print("    - LiveKit Agents version: 1.8.2")
     print(f"    - LiveKit STT Model:      {stt_model} (confirmed in STTModels literal)")
     print(f"    - LIVEKIT_URL:            {'CONFIGURED' if livekit_url else 'NOT CONFIGURED (Live room pending)'}")
     print(f"    - LIVEKIT_API_KEY:        {'CONFIGURED' if livekit_key else 'NOT CONFIGURED'}")
