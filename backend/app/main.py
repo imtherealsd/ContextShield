@@ -4,14 +4,10 @@ YC Fall 2026 x Moss Zero Latency Builder Sprint — Milestone 1: Security Core.
 """
 
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-# Load environment variables from .env if present
-load_dotenv()
 
 from backend.app.api.dashboard import router as dashboard_router
 from backend.app.api.demo import router as demo_router
@@ -34,7 +30,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="ContextShield Security Gateway",
         description=(
-            "Real-time zero-latency security gateway validating untrusted external "
+            "Real-time low-latency security gateway validating untrusted external "
             "context before reaching AI agents."
         ),
         version="1.0.0",

@@ -1,7 +1,7 @@
 """Read-Only Dashboard Telemetry API Router for ContextShield.
 
 Provides truth-in-telemetry observability endpoints for the Next.js frontend:
-- Stats derived strictly from real in-memory session records.
+- Stats derived strictly from the configured audit store.
 - Privacy-safe events with zero raw transcripts or secret leaks.
 - Real Moss policy catalog read dynamically from security_policies.json.
 - Verifiable runtime health derived from actual operational status.
@@ -29,8 +29,8 @@ POLICIES_PATH = Path(__file__).resolve().parent.parent / "data" / "security_poli
 
 @router.get("/stats")
 async def get_dashboard_stats() -> Dict[str, Any]:
-    """Returns aggregated metrics computed strictly from current in-memory session events."""
-    audit_records = audit_service.get_records()
+    """Returns metrics computed from the configured audit store."""
+    audit_records = await audit_service.get_records()
     voice_records = dashboard_telemetry.get_voice_events(limit=500)
     
     total_evaluated = len(audit_records)
@@ -91,9 +91,10 @@ async def get_dashboard_stats() -> Dict[str, Any]:
     gemini_invocation_rate = round((gemini_called_count / total_evaluated * 100.0), 1) if total_evaluated > 0 else 0.0
     gemini_skip_rate = round((gemini_skipped_count / total_evaluated * 100.0), 1) if total_evaluated > 0 else 100.0
 
+    is_persistent = audit_service.store.is_persistent
     return {
-        "session_label": "Current Session (in-memory)",
-        "is_session_data": True,
+        "session_label": "Persistent Audit History" if is_persistent else "Current Session",
+        "is_session_data": not is_persistent,
         "total_evaluated": total_evaluated,
         "safe_count": safe_count,
         "sanitize_count": sanitize_count,
@@ -123,7 +124,7 @@ async def get_dashboard_events(
     decision: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Returns recent privacy-safe security events with filtering support."""
-    audit_records = audit_service.get_records()
+    audit_records = await audit_service.get_records()
     voice_records = {v.get("request_id"): v for v in dashboard_telemetry.get_voice_events(limit=200)}
 
     unified_events: List[Dict[str, Any]] = []
@@ -217,7 +218,7 @@ async def get_dashboard_health() -> Dict[str, Any]:
     moss_stat = moss_retriever.get_status()
 
     # Determine last Gemini status from audit events
-    audit_records = audit_service.get_records()
+    audit_records = await audit_service.get_records()
     last_llm_status: Optional[str] = None
     for r in reversed(audit_records):
         llm = r.get("llm")
@@ -279,4 +280,3 @@ async def record_voice_turn_telemetry(payload: Dict[str, Any]) -> Dict[str, str]
     }
     dashboard_telemetry.record_voice_event(safe_data)
     return {"status": "ok"}
-

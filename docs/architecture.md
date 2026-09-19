@@ -14,7 +14,7 @@ Context reaches downstream AI reasoning engines if and only if ContextShield ass
 
 ### Key Architectural Principles
 
-1. **Defense-in-Depth Pipeline**: Combines deterministic high-speed regex/heuristic scanning, Moss local-first semantic policy retrieval, and a calibrated Risk Engine with Gemini structured evaluation as an escalation layer for ambiguous contexts.
+1. **Defense-in-Depth Pipeline**: Combines deterministic regex/heuristic scanning, configured Moss semantic policy retrieval, and a calibrated Risk Engine with Gemini structured evaluation as an escalation layer for ambiguous contexts.
 2. **Deterministic Sovereignty**: Deterministic CRITICAL findings cannot be downgraded by probabilistic model output.
 3. **Fail-Secure Defaults**: Any upstream timeout, rate limit (HTTP 429), schema malformation, or internal service exception automatically fails closed to `REVIEW` or `BLOCK` with `approved_context = null`.
 4. **Decoupled Telemetry**: Telemetry and audit logging are strictly read-only and non-authoritative. A failure in the telemetry subsystem cannot alter or impede security enforcement.
@@ -195,7 +195,7 @@ flowchart TD
 | **Vercel** | Public Dashboard UI | Next.js 16, TypeScript, Tailwind/Vanilla CSS | `CONTEXTSHIELD_BACKEND_URL` configured server-side. No client credentials exposed. |
 | **Railway** | Central Security Gateway | Python 3.10+, FastAPI, Uvicorn | Bound to dynamic `0.0.0.0:${PORT}`. Healthcheck at `/v1/shield/health`. |
 | **LiveKit Cloud** | Real-Time Voice Gateway | `livekit-agents` worker (`contextshield-voice`) | Deployed in region `ap-south`. Deepgram Nova-3 STT. Evaluates against Railway HTTPS. |
-| **Moss** | Policy Index | Moss Python SDK (`moss==1.12.0`) | 20 security policies in index `contextshield-security`. Zero latency on cache. |
+| **Moss** | Policy Index | Moss Python SDK (`moss==1.12.0`) | 20 security policies in index `contextshield-security`; retrieval timing is measured per request when the runtime is ready. |
 | **Google Gemini** | Fallback Evaluation & Agent | `google-genai` (`gemini-3.6-flash`) | Gated evaluation with latency target 800ms, hard timeout 1500ms. |
 
 ---

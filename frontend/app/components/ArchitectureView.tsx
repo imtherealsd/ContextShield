@@ -24,7 +24,7 @@ export function ArchitectureView() {
           </h2>
         </div>
         <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-          ContextShield operates as a zero-latency firewall for autonomous AI agents. By combining deterministic token scanning with local in-memory semantic retrieval via the Moss Local Runtime, over 95% of incoming context is resolved in &lt; 5ms without calling costly external LLM APIs.
+          ContextShield operates as a low-latency security gateway for autonomous AI agents. Deterministic scanning and configured Moss policy retrieval handle clear cases without calling the gated LLM evaluator; each request exposes its observed processing timings.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export function ArchitectureView() {
         }}
       >
         <h3 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}>
-          End-to-End Zero-Latency Pipeline Flow
+              End-to-End Security Pipeline Flow
         </h3>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -123,7 +123,7 @@ export function ArchitectureView() {
             }}
           >
             <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#f59e0b", marginBottom: "0.5rem" }}>
-              [LAYER 4] DETERMINISTIC RISK ENGINE (ZERO-LATENCY GATE)
+              [LAYER 4] DETERMINISTIC RISK ENGINE (FAST-PATH GATE)
             </div>
             <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
               Evaluates deterministic findings and Moss alignment. <strong>Critical rules have absolute authority</strong>: overrides, key leaks, and destructive commands immediately trigger BLOCK (or SANITIZE if isolated). Clean documentation immediately resolves to SAFE.

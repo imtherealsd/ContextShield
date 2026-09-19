@@ -12,5 +12,5 @@ We take the security of ContextShield seriously. If you discover or suspect a se
 
 ### Policy & Scope
 
-- ContextShield is a zero-latency defense gateway designed to mitigate prompt injection, instruction overrides, and sensitive data exfiltration before external context reaches downstream AI agents.
+- ContextShield is a low-latency defense gateway designed to mitigate prompt injection, instruction overrides, and sensitive data exfiltration before external context reaches downstream AI agents.
 - All reports will be acknowledged promptly and reviewed with highest priority.

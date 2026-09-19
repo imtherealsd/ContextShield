@@ -12,7 +12,7 @@ ContextShield is a low-latency security gateway positioned in front of the agent
 
 4
 00:00:18,800 --> 00:00:26,500
-Inbound context is scanned in parallel by sub-millisecond deterministic rules and Moss semantic retrieval over enterprise policies.
+Inbound context is scanned by deterministic rules and Moss semantic retrieval over enterprise policies.
 
 5
 00:00:26,800 --> 00:00:33,000
@@ -48,7 +48,7 @@ The hostile override is excised, the payload is revalidated, and only cleaned co
 
 13
 00:01:31,500 --> 00:01:41,200
-In the audit drawer, we inspect the decision evidence: deterministic rule triggers, sub-millisecond latency, and semantic policy candidates retrieved by Moss.
+In the audit drawer, we inspect the decision evidence: deterministic rule triggers, observed processing latency, and semantic policy candidates retrieved by Moss.
 
 14
 00:01:41,500 --> 00:01:49,500

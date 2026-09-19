@@ -19,9 +19,12 @@ from backend.app.security.schema_gateway import GatewayContext, SchemaGateway
 from backend.app.services.audit import audit_service
 from backend.app.services.evaluator import evaluator_service
 from backend.app.services.moss_service import moss_retriever
+from backend.app.storage import AuditStorageError
+import logging
 
 router = APIRouter(prefix="/v1/shield", tags=["Ingest"])
 scanner = DeterministicScanner()
+logger = logging.getLogger("contextshield.ingest")
 
 
 def construct_semantic_query(context: GatewayContext, findings: List[ThreatFinding]) -> str:
@@ -169,18 +172,27 @@ async def ingest_context(request: IngestRequest) -> IngestResponse:
     )
 
     # Step 6: Privacy-First Audit Logging (never persists raw hostile input or raw LLM prompts)
-    audit_service.record_event(
-        request_id=request_id,
-        source_type=request.source_type,
-        content_hash=gateway_ctx.content_hash,
-        decision=decision,
-        risk_score=risk_score,
-        findings=findings,
-        matched_policy_ids=matched_policy_ids,
-        latency=latency_stats,
-        sanitized_content=sanitized_content,
-        llm_status=llm_state,
-    )
+    try:
+        await audit_service.record_event(
+            request_id=request_id,
+            source_type=request.source_type,
+            content_hash=gateway_ctx.content_hash,
+            decision=decision,
+            risk_score=risk_score,
+            findings=findings,
+            matched_policy_ids=matched_policy_ids,
+            latency=latency_stats,
+            sanitized_content=sanitized_content,
+            llm_status=llm_state,
+        )
+    except AuditStorageError:
+        # Audit is observability only. A persistence outage must never alter the
+        # already-computed security decision or approved context.
+        logger.warning(
+            "Audit persistence unavailable; preserving security decision request_id=%s decision=%s",
+            request_id,
+            decision.value,
+        )
 
     return IngestResponse(
         request_id=request_id,

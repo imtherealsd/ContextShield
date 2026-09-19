@@ -1,5 +1,6 @@
 """Tests for the Read-Only Dashboard Telemetry API Router."""
 
+import asyncio
 import pytest
 from fastapi.testclient import TestClient
 
@@ -16,7 +17,7 @@ def client():
 
 def test_dashboard_stats_empty(client):
     """Verifies stats return honest empty/None values when no events have been evaluated."""
-    audit_service.clear()
+    asyncio.run(audit_service.clear())
     dashboard_telemetry.clear()
 
     resp = client.get("/v1/shield/dashboard/stats")
@@ -34,7 +35,7 @@ def test_dashboard_stats_empty(client):
 
 def test_dashboard_stats_calculated_truthfully(client):
     """Verifies stats are calculated from actual ingested events."""
-    audit_service.clear()
+    asyncio.run(audit_service.clear())
     dashboard_telemetry.clear()
 
     # Ingest a safe request
@@ -66,7 +67,7 @@ def test_dashboard_stats_calculated_truthfully(client):
 
 def test_dashboard_events_filtering(client):
     """Verifies filtering by source and decision on the events endpoint."""
-    audit_service.clear()
+    asyncio.run(audit_service.clear())
 
     client.post(
         "/v1/shield/ingest",

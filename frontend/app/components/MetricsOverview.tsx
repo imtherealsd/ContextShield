@@ -53,8 +53,10 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>● Telemetry Scope:</span>
-          <span>{stats?.session_label || "Current Session (in-memory)"}</span>
-          <span style={{ color: "var(--text-muted)" }}>• Counters reset on server restart</span>
+          <span>{stats?.session_label || "Current Session"}</span>
+          {stats?.is_session_data !== false && (
+            <span style={{ color: "var(--text-muted)" }}>• Counters reset on server restart</span>
+          )}
         </div>
         <div style={{ color: "var(--text-muted)" }}>
           Total Evaluated Turns: <strong style={{ color: "var(--text-primary)" }}>{total}</strong>
@@ -210,7 +212,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         </div>
       </div>
 
-      {/* Latency Benchmarks & Zero-Latency Cost Efficiency */}
+      {/* Observed Latency Metrics & LLM Gating */}
       <div
         style={{
           display: "grid",
@@ -294,7 +296,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
-              🎯 Zero-Latency Gating Efficiency
+              🎯 LLM Gating Efficiency
             </h3>
             <span
               style={{

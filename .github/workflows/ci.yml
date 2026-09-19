@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "hardening/**"]
+    branches: [main, "fix/**", "hardening/**"]
   pull_request:
     branches: [main]
 
@@ -14,6 +14,21 @@ jobs:
   backend:
     name: Backend CI (Python 3.10)
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: contextshield
+          POSTGRES_PASSWORD: contextshield_test
+          POSTGRES_DB: contextshield_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U contextshield -d contextshield_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -34,11 +49,29 @@ jobs:
         run: |
           python -m ruff check .
 
-      - name: Run Test Suite (pytest)
+      - name: Secret exposure audit
+        run: |
+          python scripts/audit_secrets.py
+
+      - name: Run unit and regression tests
         env:
           AUDIT_STORE: memory
         run: |
           python -m pytest -v
+
+      - name: Run Alembic migrations against PostgreSQL
+        env:
+          AUDIT_STORE: postgres
+          DATABASE_URL: postgresql+asyncpg://contextshield:contextshield_test@localhost:5432/contextshield_test
+        run: |
+          python -m alembic upgrade head
+
+      - name: Run PostgreSQL persistence integration tests
+        env:
+          AUDIT_STORE: postgres
+          DATABASE_URL: postgresql+asyncpg://contextshield:contextshield_test@localhost:5432/contextshield_test
+        run: |
+          python -m pytest -v -m postgres
 
   frontend:
     name: Frontend CI (Node 22)

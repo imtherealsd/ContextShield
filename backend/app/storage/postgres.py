@@ -1,12 +1,9 @@
-"""PostgreSQL persistent audit storage implementation for ContextShield.
-
-Enforces production database persistence using SQLAlchemy 2.0 and asyncpg,
-with strict privacy constraints (no raw hostile input or credentials persisted).
-"""
+"""Asynchronous PostgreSQL persistent audit storage for ContextShield."""
 
 from datetime import datetime, timezone
 import logging
 from typing import Any, Dict, List, Optional
+
 from sqlalchemy import (
     Column,
     DateTime,
@@ -15,11 +12,19 @@ from sqlalchemy import (
     JSON,
     String,
     Text,
-    create_engine,
+    delete,
     select,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker
-from backend.app.storage.base import AuditStore
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import declarative_base
+
+from backend.app.storage.base import AuditStore, AuditStorageError
 
 logger = logging.getLogger("contextshield.storage.postgres")
 
@@ -67,35 +72,37 @@ class AuditTelemetryModel(Base):
 
 
 class PostgresAuditStore(AuditStore):
-    """PostgreSQL implementation of AuditStore with SQLAlchemy 2.0."""
+    """PostgreSQL implementation of AuditStore with SQLAlchemy 2.x async APIs."""
 
     def __init__(self, database_url: str, echo: bool = False):
         if not database_url or not database_url.strip():
             raise ValueError("DATABASE_URL cannot be empty for PostgresAuditStore.")
-        
-        self.database_url = database_url.strip()
-        # Ensure proper driver for sync engine if standard postgresql:// provided
-        sync_url = self.database_url
-        if sync_url.startswith("postgresql+asyncpg://"):
-            sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://", 1)
 
-        try:
-            self.engine = create_engine(sync_url, echo=echo, pool_pre_ping=True)
-            self.SessionFactory = sessionmaker(bind=self.engine)
-            logger.info("PostgresAuditStore initialized.")
-        except Exception as exc:
-            logger.error("Failed to initialize database engine for PostgresAuditStore: %s", exc)
-            raise
+        self.database_url = normalize_database_url(database_url)
+        engine_kwargs: Dict[str, Any] = {"echo": echo, "pool_pre_ping": True}
+        if self.database_url.startswith("sqlite+aiosqlite:///:memory:"):
+            engine_kwargs.update({"poolclass": StaticPool, "connect_args": {"check_same_thread": False}})
+
+        self.engine: AsyncEngine = create_async_engine(self.database_url, **engine_kwargs)
+        self.session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
+            bind=self.engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
 
     @property
     def is_persistent(self) -> bool:
         return True
 
-    def create_tables(self) -> None:
+    async def create_tables(self) -> None:
         """Helper to initialize database tables (e.g. for testing)."""
-        Base.metadata.create_all(self.engine)
+        try:
+            async with self.engine.begin() as connection:
+                await connection.run_sync(Base.metadata.create_all)
+        except Exception as exc:
+            raise AuditStorageError("Audit table initialization failed") from exc
 
-    def record_event(self, record: Dict[str, Any]) -> Dict[str, Any]:
+    async def record_event(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """Persist a privacy-minimized audit record into PostgreSQL."""
         # Parse timestamp safely
         ts_val = record.get("timestamp")
@@ -125,24 +132,52 @@ class PostgresAuditStore(AuditStore):
             llm=record.get("llm"),
         )
 
-        with self.SessionFactory() as session:
-            session.add(db_item)
-            session.commit()
+        try:
+            async with self.session_factory() as session:
+                session.add(db_item)
+                await session.commit()
+        except Exception as exc:
+            raise AuditStorageError("Audit event persistence failed") from exc
 
         return record
 
-    def get_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    async def get_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Retrieve audit records ordered chronologically."""
-        with self.SessionFactory() as session:
-            stmt = select(AuditTelemetryModel).order_by(AuditTelemetryModel.timestamp.asc())
-            results = session.scalars(stmt).all()
-            records = [r.to_dict() for r in results]
-            if limit is not None and limit > 0:
-                return records[-limit:]
-            return records
+        try:
+            async with self.session_factory() as session:
+                stmt = select(AuditTelemetryModel).order_by(
+                    AuditTelemetryModel.timestamp.asc(), AuditTelemetryModel.id.asc()
+                )
+                result = await session.execute(stmt)
+                records = [item.to_dict() for item in result.scalars().all()]
+        except Exception as exc:
+            raise AuditStorageError("Audit record retrieval failed") from exc
 
-    def clear(self) -> None:
+        if limit is not None and limit > 0:
+            return records[-limit:]
+        return records
+
+    async def clear(self) -> None:
         """Clear all audit records (primarily for test harnesses)."""
-        with self.SessionFactory() as session:
-            session.query(AuditTelemetryModel).delete()
-            session.commit()
+        try:
+            async with self.session_factory() as session:
+                await session.execute(delete(AuditTelemetryModel))
+                await session.commit()
+        except Exception as exc:
+            raise AuditStorageError("Audit record cleanup failed") from exc
+
+    async def dispose(self) -> None:
+        """Release the async engine resources."""
+        await self.engine.dispose()
+
+
+def normalize_database_url(database_url: str) -> str:
+    """Normalize provider URLs to the async driver without exposing credentials."""
+    normalized = database_url.strip()
+    if normalized.startswith("postgresql://"):
+        return "postgresql+asyncpg://" + normalized[len("postgresql://"):]
+    if normalized.startswith("postgresql+asyncpg://"):
+        return normalized
+    if normalized.startswith("sqlite:///"):
+        return "sqlite+aiosqlite://" + normalized[len("sqlite://"):]
+    return normalized

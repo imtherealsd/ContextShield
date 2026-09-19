@@ -2,7 +2,7 @@
 
 from typing import Optional
 from backend.app.core.config import get_settings
-from backend.app.storage.base import AuditStore
+from backend.app.storage.base import AuditStore, AuditStorageError
 from backend.app.storage.memory import MemoryAuditStore
 from backend.app.storage.postgres import PostgresAuditStore
 
@@ -50,6 +50,7 @@ def reset_global_store() -> None:
 
 __all__ = [
     "AuditStore",
+    "AuditStorageError",
     "MemoryAuditStore",
     "PostgresAuditStore",
     "get_audit_store",

@@ -787,7 +787,7 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
               </strong>
             </div>
             <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
-              ContextShield acts as the exclusive zero-latency gateway. External inputs are scanned, sanitized, or blocked
+              ContextShield acts as the exclusive security gateway. External inputs are scanned, sanitized, or blocked
               before reaching downstream memory.
             </p>
             <div

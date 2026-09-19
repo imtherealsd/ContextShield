@@ -1,6 +1,6 @@
 # ContextShield Documentation Index
 
-Welcome to the ContextShield documentation hub. This directory contains specifications, architectural guides, demo assets, and submission materials for the **YC Fall 2026 x Moss Zero Latency Builder Sprint**.
+Welcome to the ContextShield documentation hub. This directory contains specifications, architectural guides, demo assets, and submission materials for the **YC Fall 2026 x Moss Builder Sprint**.
 
 ---
 
@@ -9,7 +9,7 @@ Welcome to the ContextShield documentation hub. This directory contains specific
 | Document | Purpose |
 | :--- | :--- |
 | **[architecture.md](architecture.md)** | Full technical architecture specification: pipeline dataflow, deterministic scanner, Moss local runtime, gated Gemini evaluation, sanitization engine, and protected agent boundary. |
-| **[PRD.md](PRD.md)** | Product Requirements Document: problem statement, threat model, functional requirements, and zero-latency design invariants. |
+| **[PRD.md](PRD.md)** | Product Requirements Document: problem statement, threat model, functional requirements, and fast-path security invariants. |
 | **[../DEPLOYMENT.md](../DEPLOYMENT.md)** | Complete production deployment guide for Railway (FastAPI backend), Vercel (Next.js frontend), and LiveKit Cloud (voice agent). |
 | **[../SECURITY.md](../SECURITY.md)** | Security policy, vulnerability reporting, and privacy invariants. |
 

@@ -43,12 +43,12 @@ This runbook specifies the exact procedure and browser automation orchestration 
 ### SHOT 5: Moss & Event Detail Evidence (1:30 – 1:40 | 10s)
 - **Transition at 1:30**: Click `Live Security Feed` tab.
 - **Action**: Click the top `BLOCK` event row to slide open the `EventDrawer`.
-- **Visual Focus**: Both `Applied Security Evidence (Decision Drivers)` and `Retrieved Moss Policies (Semantic Candidates)` visible, along with sub-millisecond execution latency.
+- **Visual Focus**: Both `Applied Security Evidence (Decision Drivers)` and `Retrieved Moss Policies (Semantic Candidates)` visible, along with observed execution timing.
 
 ### SHOT 6: LiveKit Real-Time Voice Event (1:40 – 1:50 | 10s)
 - **Transition at 1:40**: Close drawer and click `LiveKit Voice` tab.
 - **Action**: Click the verified production LiveKit voice `BLOCK` event to open drawer.
-- **Visual Focus**: `Source: LiveKit Voice`, `Decision: BLOCK`, Voice-to-decision latency (~0.4ms), and `NO CONTEXT DELIVERED`.
+- **Visual Focus**: `Source: LiveKit Voice`, `Decision: BLOCK`, observed voice-to-decision timing, and `NO CONTEXT DELIVERED`.
 
 ### SHOT 7: Closing & Brand Overview (1:50 – 1:54 | 4s)
 - **Transition at 1:50**: Close drawer and switch back to `Overview` tab.

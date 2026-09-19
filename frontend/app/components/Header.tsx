@@ -90,7 +90,7 @@ export function Header({
                 textTransform: "uppercase",
               }}
             >
-              Zero-Latency Security Gateway
+              Low-Latency Security Gateway
             </span>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function Header({
                   : "var(--text-secondary)",
             }}
           >
-            {geminiStatus === "not_called" ? "Standby (Zero-Latency Gated)" : geminiStatus}
+            {geminiStatus === "not_called" ? "Standby (LLM Gated)" : geminiStatus}
           </span>
         </div>
 
