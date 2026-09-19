@@ -28,15 +28,15 @@ class MemoryAuditStore(AuditStore):
     def is_persistent(self) -> bool:
         return False
 
-    def record_event(self, record: Dict[str, Any]) -> Dict[str, Any]:
+    async def record_event(self, record: Dict[str, Any]) -> Dict[str, Any]:
         self._records.append(record)
         return record
 
-    def get_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    async def get_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         records = list(self._records)
         if limit is not None and limit > 0:
             return records[-limit:]
         return records
 
-    def clear(self) -> None:
+    async def clear(self) -> None:
         self._records.clear()

@@ -32,7 +32,8 @@ def _make_sample_record(req_id: str = "req-100", decision: str = "SAFE") -> dict
     }
 
 
-def test_memory_store_contract():
+@pytest.mark.asyncio
+async def test_memory_store_contract():
     """Validates MemoryAuditStore operations: record, get, limit, clear."""
     store = MemoryAuditStore(max_records=5)
     assert not store.is_persistent
@@ -41,41 +42,41 @@ def test_memory_store_contract():
     rec2 = _make_sample_record("req-2", "BLOCK")
     rec3 = _make_sample_record("req-3", "SANITIZE")
 
-    store.record_event(rec1)
-    store.record_event(rec2)
-    store.record_event(rec3)
+    await store.record_event(rec1)
+    await store.record_event(rec2)
+    await store.record_event(rec3)
 
-    records = store.get_records()
+    records = await store.get_records()
     assert len(records) == 3
     assert records[0]["request_id"] == "req-1"
     assert records[1]["request_id"] == "req-2"
     assert records[2]["request_id"] == "req-3"
 
     # Test limit
-    recent = store.get_records(limit=2)
+    recent = await store.get_records(limit=2)
     assert len(recent) == 2
     assert recent[0]["request_id"] == "req-2"
     assert recent[1]["request_id"] == "req-3"
 
     # Test clear
-    store.clear()
-    assert len(store.get_records()) == 0
+    await store.clear()
+    assert len(await store.get_records()) == 0
 
 
-def test_postgres_store_with_sqlite_engine():
-    """Validates PostgresAuditStore ORM persistence, querying, and schema using SQLite engine."""
-    # Use in-memory SQLite database to test full SQLAlchemy ORM layer without external Postgres dependency
-    store = PostgresAuditStore(database_url="sqlite:///:memory:")
+@pytest.mark.asyncio
+async def test_storage_contract_with_sqlite_engine():
+    """Fast async storage contract test using SQLite, not PostgreSQL integration."""
+    store = PostgresAuditStore(database_url="sqlite+aiosqlite:///:memory:")
     assert store.is_persistent
-    store.create_tables()
+    await store.create_tables()
 
     rec1 = _make_sample_record("req-pg-1", "SAFE")
     rec2 = _make_sample_record("req-pg-2", "BLOCK")
 
-    store.record_event(rec1)
-    store.record_event(rec2)
+    await store.record_event(rec1)
+    await store.record_event(rec2)
 
-    records = store.get_records()
+    records = await store.get_records()
     assert len(records) == 2
     assert records[0]["request_id"] == "req-pg-1"
     assert records[0]["decision"] == "SAFE"
@@ -85,13 +86,21 @@ def test_postgres_store_with_sqlite_engine():
     assert "RULE-IO-001" in records[1]["triggered_rule_ids"]
 
     # Test limit
-    recent = store.get_records(limit=1)
+    recent = await store.get_records(limit=1)
     assert len(recent) == 1
     assert recent[0]["request_id"] == "req-pg-2"
 
     # Test clear
-    store.clear()
-    assert len(store.get_records()) == 0
+    await store.clear()
+    assert len(await store.get_records()) == 0
+    await store.dispose()
+
+
+def test_postgres_url_is_normalized_to_asyncpg():
+    """Provider-style PostgreSQL URLs retain the asyncpg driver."""
+    store = PostgresAuditStore("postgresql://user:password@localhost:5432/contextshield")
+    assert store.database_url == "postgresql+asyncpg://user:password@localhost:5432/contextshield"
+    assert store.engine.url.drivername == "postgresql+asyncpg"
 
 
 def test_postgres_store_empty_url_rejected():
