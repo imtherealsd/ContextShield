@@ -24,6 +24,7 @@ export function LiveFeed({ events, onSelectEvent, loading }: LiveFeedProps) {
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       {/* Filter Toolbar */}
       <div
+        className="feed-toolbar"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -164,6 +165,16 @@ export function LiveFeed({ events, onSelectEvent, loading }: LiveFeedProps) {
               <div
                 key={ev.request_id || index}
                 onClick={() => onSelectEvent(ev)}
+                className="feed-row"
+                role="button"
+                tabIndex={0}
+                aria-label={`Inspect ${ev.decision} event from ${ev.source}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectEvent(ev);
+                  }
+                }}
                 style={{
                   backgroundColor: "var(--bg-card)",
                   borderRadius: "8px",

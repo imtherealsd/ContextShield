@@ -29,7 +29,7 @@ interface VoicePanelProps {
 
 export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <div className="voice-page" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Voice Architecture Banner */}
       <div
         style={{
@@ -114,6 +114,7 @@ export function VoicePanel({ voiceTurns, onSelectEvent }: VoicePanelProps) {
             return (
               <div
                 key={turn.turn_id || idx}
+                className="voice-event"
                 onClick={() =>
                   onSelectEvent({
                     request_id: turn.request_id || turn.turn_id || "unknown",

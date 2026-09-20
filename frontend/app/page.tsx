@@ -157,6 +157,7 @@ export default function DashboardPage() {
 
       {/* Main Workspace Area */}
       <main
+        className="dashboard-main"
         style={{
           flex: 1,
           padding: "1.5rem",
@@ -166,10 +167,29 @@ export default function DashboardPage() {
         }}
       >
         {activeTab === "overview" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+          <div className="overview-stack" style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+            <section className="boundary-strip" aria-label="ContextShield security boundary">
+              <div className="boundary-stage">
+                <span className="boundary-stage-label">UNTRUSTED CONTEXT</span>
+                <strong className="boundary-stage-title">Web · API · Docs · Voice</strong>
+                <span className="boundary-stage-detail">External inputs enter unverified.</span>
+              </div>
+              <span className="boundary-arrow" aria-hidden="true">→</span>
+              <div className="boundary-stage" style={{ borderColor: "rgba(59, 130, 246, 0.35)" }}>
+                <span className="boundary-stage-label" style={{ color: "var(--accent-blue)" }}>CONTEXTSHIELD</span>
+                <strong className="boundary-stage-title">Inspect · Retrieve · Decide</strong>
+                <span className="boundary-stage-detail">Deterministic security gateway.</span>
+              </div>
+              <span className="boundary-arrow" aria-hidden="true">→</span>
+              <div className="boundary-stage" style={{ borderColor: "rgba(16, 185, 129, 0.35)" }}>
+                <span className="boundary-stage-label" style={{ color: "var(--badge-safe-text)" }}>PROTECTED AGENT</span>
+                <strong className="boundary-stage-title">Approved Context Only</strong>
+                <span className="boundary-stage-detail">SAFE · SANITIZE · REVIEW · BLOCK</span>
+              </div>
+            </section>
             <MetricsOverview stats={stats} />
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+              <div className="section-heading-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                 <h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)" }}>
                   Recent Ingestion Stream (Latest Events)
                 </h3>

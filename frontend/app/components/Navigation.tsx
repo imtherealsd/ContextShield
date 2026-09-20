@@ -30,6 +30,7 @@ export function Navigation({
 
   return (
     <nav
+      className="nav-tabs"
       style={{
         borderBottom: "1px solid var(--border-subtle)",
         backgroundColor: "var(--bg-card)",
@@ -48,6 +49,8 @@ export function Navigation({
             key={tab.key}
             id={`nav-tab-${tab.key}`}
             onClick={() => onSelectTab(tab.key)}
+            className="nav-tab"
+            aria-current={isActive ? "page" : undefined}
             style={{
               padding: "0.875rem 1rem",
               backgroundColor: "transparent",
