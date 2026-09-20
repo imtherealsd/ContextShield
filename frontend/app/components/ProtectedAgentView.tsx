@@ -123,7 +123,7 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+    <div className="boundary-page" style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       {/* Top Banner */}
       <div
         style={{
@@ -673,7 +673,9 @@ export function ProtectedAgentView({ events }: ProtectedAgentViewProps) {
                       demoResult.agent_response || "No response text."
                     ) : (
                       <div>
-                        <strong>[NO CONTEXT DELIVERED]</strong>
+                        <strong style={{ display: "block", color: "var(--badge-blk-text)", fontSize: "1rem", fontWeight: 800, letterSpacing: "0.03em" }}>
+                          NO CONTEXT DELIVERED
+                        </strong>
                         <div style={{ fontSize: "0.75rem", marginTop: "0.25rem", color: "var(--text-secondary)" }}>
                           ContextShield contained this threat. No unverified or hostile text reached the downstream LLM.
                         </div>

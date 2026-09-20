@@ -85,7 +85,7 @@ export function PoliciesView({ policies, mossIndexName, mossStatus }: PoliciesVi
         >
           <span>Runtime Status:</span>
           <strong style={{ color: mossStatus === "ready" ? "#10b981" : "#f59e0b" }}>
-            {mossStatus || "ready"}
+            {mossStatus === "ready" ? "Operational" : mossStatus || "Unknown"}
           </strong>
         </div>
       </div>
@@ -153,7 +153,7 @@ export function PoliciesView({ policies, mossIndexName, mossStatus }: PoliciesVi
       </div>
 
       {/* Policy Cards Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "0.875rem" }}>
+      <div className="policy-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "0.875rem" }}>
         {filtered.map((p) => {
           const isCrit = p.severity === "CRITICAL";
           const isHigh = p.severity === "HIGH";
@@ -161,6 +161,7 @@ export function PoliciesView({ policies, mossIndexName, mossStatus }: PoliciesVi
           return (
             <div
               key={p.id}
+              className="policy-card"
               style={{
                 backgroundColor: "var(--bg-card)",
                 borderRadius: "8px",

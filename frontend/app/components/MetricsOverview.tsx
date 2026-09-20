@@ -64,6 +64,15 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
       </div>
 
       {/* Decision Summary KPI Grid */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem", flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)" }}>Decision outcomes</h2>
+          <p style={{ marginTop: "0.2rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+            Every evaluated turn ends at an explicit protected-agent boundary.
+          </p>
+        </div>
+        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Delivery status by decision</span>
+      </div>
       <div
         style={{
           display: "grid",
@@ -73,6 +82,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
       >
         {/* SAFE */}
         <div
+          className="decision-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "8px",
@@ -83,7 +93,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 500 }}>
-              SAFE Decisions
+              SAFE
             </span>
             <span
               style={{
@@ -102,12 +112,13 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
             {stats?.safe_count ?? 0}
           </div>
           <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-            Context delivered to protected agent unmodified
+            Original context delivered
           </span>
         </div>
 
         {/* SANITIZE */}
         <div
+          className="decision-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "8px",
@@ -118,7 +129,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 500 }}>
-              SANITZED Decisions
+              SANITIZE
             </span>
             <span
               style={{
@@ -137,12 +148,13 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
             {stats?.sanitize_count ?? 0}
           </div>
           <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-            Hostile segments scrubbed; benign context preserved
+            Unsafe fragments removed
           </span>
         </div>
 
         {/* REVIEW */}
         <div
+          className="decision-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "8px",
@@ -153,7 +165,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 500 }}>
-              REVIEW Escalations
+              REVIEW
             </span>
             <span
               style={{
@@ -172,12 +184,13 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
             {stats?.review_count ?? 0}
           </div>
           <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-            Ambiguous intent: agent context withheld pending human check
+            Context withheld for review
           </span>
         </div>
 
         {/* BLOCK */}
         <div
+          className="decision-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "8px",
@@ -188,7 +201,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 500 }}>
-              BLOCKED Threats
+              BLOCK
             </span>
             <span
               style={{
@@ -207,7 +220,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
             {stats?.block_count ?? 0}
           </div>
           <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-            Critical threats contained: ZERO context reached agent
+            No context reached agent
           </span>
         </div>
       </div>
@@ -220,7 +233,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
           gap: "1rem",
         }}
       >
-        {/* Monotonic Latencies */}
+        {/* Pipeline Performance */}
         <div
           style={{
             backgroundColor: "var(--bg-card)",
@@ -234,7 +247,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
-              ⚡ Monotonic Latency Benchmarks
+              ⚡ Pipeline Performance
             </h3>
             <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>Real Session Averages</span>
           </div>
@@ -256,7 +269,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
               <strong className="font-mono" style={{ color: "var(--text-primary)" }}>
                 {stats?.average_moss_ms !== null && stats?.average_moss_ms !== undefined
                   ? `${stats.average_moss_ms} ms`
-                  : "— (no observed query)"}
+                  : "No observed query"}
               </strong>
             </div>
 
@@ -276,7 +289,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
               <strong className="font-mono" style={{ color: "#10b981" }}>
                 {stats?.average_voice_to_decision_ms !== null && stats?.average_voice_to_decision_ms !== undefined
                   ? `${stats.average_voice_to_decision_ms} ms`
-                  : "— (recorded on turn)"}
+                  : "Recorded on turn"}
               </strong>
             </div>
           </div>
@@ -308,7 +321,7 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
                 fontWeight: 600,
               }}
             >
-              Cost & Latency Shield
+              Ambiguity only
             </span>
           </div>
 
@@ -317,20 +330,20 @@ export function MetricsOverview({ stats }: MetricsOverviewProps) {
               {stats?.gemini_skip_rate ?? 100}%
             </span>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              LLM Invocations Avoided
+              LLM evaluations avoided
             </span>
           </div>
 
           <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-            Deterministic scanning and available Moss policy retrieval resolve clear cases without an LLM call; observed latency is measured per request.
+            Clear decisions use the fast deterministic path; Gemini is reserved for ambiguous cases.
           </p>
 
-          <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-            <div>
-              LLM Skipped: <strong style={{ color: "#10b981" }}>{stats?.gemini_skipped_count ?? 0}</strong>
+          <div className="llm-stat-grid">
+            <div className="llm-stat">
+              Skipped: <strong style={{ color: "#10b981" }}>{stats?.gemini_skipped_count ?? 0}</strong>
             </div>
-            <div>
-              LLM Called (Ambiguous Only): <strong style={{ color: "var(--text-primary)" }}>{stats?.gemini_called_count ?? 0}</strong>
+            <div className="llm-stat">
+              Called: <strong style={{ color: "var(--text-primary)" }}>{stats?.gemini_called_count ?? 0}</strong>
             </div>
           </div>
         </div>

@@ -162,8 +162,15 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
 
         {/* Drawer Content */}
         <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div>
+            <h3 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-primary)" }}>Decision Summary</h3>
+            <p style={{ marginTop: "0.2rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              The gateway verdict and the context-delivery boundary for this event.
+            </p>
+          </div>
           {/* Key Attributes Grid */}
           <div
+            className="drawer-section"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
@@ -206,6 +213,7 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
 
           {/* CRITICAL: Protected Agent Security Boundary Panel */}
           <div
+            className="drawer-section"
             style={{
               borderRadius: "8px",
               padding: "1rem 1.25rem",
@@ -282,7 +290,7 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
           {/* Timing Breakdown Bar */}
           <div>
             <h3 style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-              Monotonic Execution Breakdown
+              Pipeline latency
             </h3>
             <div
               style={{
@@ -347,7 +355,7 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
           {/* MANDATORY DISTINCTION: Retrieved Moss Policies vs Applied Security Evidence */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {/* Applied Security Evidence */}
-            <div>
+            <div className="drawer-section drawer-section--evidence">
               <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
                 <span style={{ fontSize: "0.8125rem" }}>⚖️</span>
                 <h3 style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -385,7 +393,7 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
             </div>
 
             {/* Retrieved Moss Policies */}
-            <div>
+            <div className="drawer-section drawer-section--retrieval">
               <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
                 <span style={{ fontSize: "0.8125rem" }}>🔍</span>
                 <h3 style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>

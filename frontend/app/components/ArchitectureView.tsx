@@ -4,9 +4,10 @@ import React from "react";
 
 export function ArchitectureView() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div className="architecture-page" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Overview Banner */}
       <div
+        className="architecture-overview"
         style={{
           padding: "1.25rem 1.5rem",
           borderRadius: "8px",
@@ -30,6 +31,7 @@ export function ArchitectureView() {
 
       {/* Visual Pipeline Flow Chart */}
       <div
+        className="architecture-flow"
         style={{
           backgroundColor: "var(--bg-card)",
           borderRadius: "8px",

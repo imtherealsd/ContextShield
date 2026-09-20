@@ -36,6 +36,7 @@ export function Header({
 
   return (
     <header
+      className="app-header"
       style={{
         borderBottom: "1px solid var(--border-subtle)",
         backgroundColor: "var(--bg-card)",
@@ -51,7 +52,7 @@ export function Header({
       }}
     >
       {/* Brand & System Status */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
+      <div className="header-brand" style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <div
             style={{
@@ -90,13 +91,14 @@ export function Header({
                 textTransform: "uppercase",
               }}
             >
-              Low-Latency Security Gateway
+              Low-Latency AI Context Security Gateway
             </span>
           </div>
         </div>
 
         {/* Status Pulse */}
         <div
+          className="gateway-chip"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -126,6 +128,7 @@ export function Header({
 
       {/* Subsystem Verifiable Health Badges */}
       <div
+        className="status-cluster"
         style={{
           display: "flex",
           alignItems: "center",
@@ -135,6 +138,7 @@ export function Header({
       >
         {/* Moss Local Runtime */}
         <div
+          className="status-chip"
           style={{
             display: "flex",
             alignItems: "center",
@@ -148,7 +152,8 @@ export function Header({
           }}
           title={`Moss Index: ${health?.moss?.index_name || "contextshield-security"}`}
         >
-          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Moss:</span>
+          <span className="status-chip-dot" style={{ backgroundColor: mossReady ? "#10b981" : mossStatus === "error" ? "#f59e0b" : "var(--text-muted)" }} />
+          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Moss</span>
           <span
             style={{
               fontWeight: 600,
@@ -156,9 +161,9 @@ export function Header({
             }}
           >
             {mossReady
-              ? "Ready (Local Index)"
+              ? "Ready"
               : mossStatus === "error"
-              ? "Unavailable (Fail-Secure)"
+              ? "Fail-Secure"
               : mossStatus === "not_configured"
               ? "Not Configured"
               : mossStatus}
@@ -167,6 +172,7 @@ export function Header({
 
         {/* Gemini Evaluator */}
         <div
+          className="status-chip"
           style={{
             display: "flex",
             alignItems: "center",
@@ -180,7 +186,8 @@ export function Header({
           }}
           title={health?.gemini?.model ? `Model: ${health.gemini.model}` : "Gemini Evaluator"}
         >
-          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Gemini:</span>
+          <span className="status-chip-dot" style={{ backgroundColor: geminiStatus === "success" ? "#10b981" : geminiStatus === "rate_limited" ? "#f59e0b" : "var(--text-muted)" }} />
+          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Gemini</span>
           <span
             style={{
               fontWeight: 600,
@@ -192,12 +199,13 @@ export function Header({
                   : "var(--text-secondary)",
             }}
           >
-            {geminiStatus === "not_called" ? "Standby (LLM Gated)" : geminiStatus}
+            {geminiStatus === "not_called" ? "Standby" : geminiStatus}
           </span>
         </div>
 
         {/* LiveKit Voice Cloud */}
         <div
+          className="status-chip"
           style={{
             display: "flex",
             alignItems: "center",
@@ -211,18 +219,20 @@ export function Header({
           }}
           title="LiveKit Inference STT (deepgram/nova-3)"
         >
-          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Voice:</span>
+          <span className="status-chip-dot" style={{ backgroundColor: hasRecentVoice ? "#10b981" : "var(--text-muted)" }} />
+          <span style={{ color: "var(--text-muted)", fontSize: "0.6875rem" }}>Voice</span>
           <span
             style={{
               fontWeight: 600,
               color: hasRecentVoice ? "#10b981" : "var(--text-secondary)",
             }}
           >
-            {hasRecentVoice ? "Active Stream" : "Worker Online"}
+            {hasRecentVoice ? "Active" : "Online"}
           </span>
         </div>
 
         {/* Manual Refresh Indicator */}
+        <div className="header-actions">
         <button
           onClick={onRefresh}
           disabled={refreshing}
@@ -283,6 +293,7 @@ export function Header({
         >
           ⚡ Simulate Ingestion
         </button>
+        </div>
       </div>
     </header>
   );
